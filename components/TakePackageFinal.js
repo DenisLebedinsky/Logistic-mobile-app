@@ -1,13 +1,41 @@
-import React from "react";
-import { StyleSheet, Text, View, ScrollView, FlatList } from "react-native";
-
+import React, { useState } from "react";
+import { StyleSheet, Text, View, TextInput, AsyncStorage } from "react-native";
+import { updatePackage } from "../api";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-const TakePackage = ({ navigation }) => {
+const TakePackageFinal = ({ navigation }) => {
+  const [comment, setComment] = useState("");
   const packageItem = navigation.getParam("item");
 
+  const [err, ssetErr] = useState(false);
+
   const take = async () => {
-    navigation.navigate("TakePackageFinal", { item: packageItem });
+    try {
+      const user = JSON.parse(await AsyncStorage.getItem("USER"));
+      const token = await AsyncStorage.getItem("TOKEN");
+debugger
+      if (user.id && user.locationId && packageItem._id) {
+        const data = {
+          _id: packageItem._id,
+          status: "accepted",
+          recipientId: user.id,
+          factResiverId: user.locationId,
+          resiveData: Date.now(),
+          comment: comment
+        };
+
+        const res = await updatePackage(data, token);
+        if (res === "error") {
+          ssetErr(true);
+        } else {
+          navigation.navigate("Home");
+        }
+      } else {
+        ssetErr(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const cancel = () => {
@@ -18,26 +46,24 @@ const TakePackage = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.contentInfo}>
         <View style={styles.info}>
-          <Text style={styles.headTitle}>ОПИСЬ ВЛОЖЕНИЯ:</Text>
-          <ScrollView>
-            <FlatList
-              data={packageItem.inventory}
-              renderItem={({ item }) => (
-                <View style={styles.list}>
-                  <View style={styles.title}>
-                    <Text>{item.title}</Text>
-                  </View>
-                  <View style={styles.count}>
-                    <Text>{item.count}</Text>
-                  </View>
-                </View>
-              )}
-              keyExtractor={item => item._id.toString()}
-            ></FlatList>
-          </ScrollView>
+          <Text style={styles.headTitle}>Комментарий:</Text>
+          <TextInput
+            style={styles.textInput}
+            multiline={true}
+            numberOfLines={10}
+            onChangeText={text => setComment(text)}
+            value={comment}
+          />
         </View>
       </View>
       <View style={styles.contentCenter}>
+        {err && (
+          <View>
+            <Text style={styles.err}>
+              Ошибка обновления, повторите попытку
+            </Text>
+          </View>
+        )}
         <View style={styles.btnBlock}>
           <View>
             <TouchableOpacity onPress={cancel}>
@@ -49,7 +75,7 @@ const TakePackage = ({ navigation }) => {
           <View>
             <TouchableOpacity onPress={take}>
               <View style={styles.btn}>
-                <Text style={styles.btnText}>Принять</Text>
+                <Text style={styles.btnText}>Готово</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -76,7 +102,9 @@ const styles = StyleSheet.create({
     marginTop: 30
   },
   info: {
-    flex: 1
+    flex: 1,
+    width: 300,
+    height: "70%"
   },
   loading: {
     width: 200,
@@ -115,10 +143,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10
   },
+  textInput: {
+    padding: 10,
+    textAlignVertical: "top",
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 25
+  },
   err: {
     color: "red",
     textAlign: "center"
   }
 });
 
-export default TakePackage;
+export default TakePackageFinal;

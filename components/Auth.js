@@ -15,7 +15,7 @@ const Auth = ({ signIn, err, setErr }) => {
 
   const autorize = () => {
   
-    signIn({ login, password });
+    signIn({ login: login.trim(), password });
   };
 
   const changeLogin = text => {

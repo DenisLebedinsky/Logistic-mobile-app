@@ -6,6 +6,7 @@ import BarcodeScanner from './components/BarCodeScaner';
 import PackageInfo from './components/PackageInfo';
 import Home from "./components/Home";
 import TakePackage from './components/TakePackage'
+import TakePackageFinal from './components/TakePackageFinal'
 
 const AppNavigator = createStackNavigator(
   {
@@ -20,6 +21,9 @@ const AppNavigator = createStackNavigator(
     },
     TakePackage:{
       screen: TakePackage
+    },
+    TakePackageFinal:{
+      screen: TakePackageFinal
     }
   },
   {

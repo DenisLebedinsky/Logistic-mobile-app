@@ -34,23 +34,26 @@ const PackageInfo = ({ navigation }) => {
   };
 
   const take = () => {
-    navigation.navigate('TakePackage',{item})
+    navigation.navigate("TakePackage", { item });
   };
 
   const transmit = () => {};
 
   const send = async () => {
+    const user = JSON.parse(await AsyncStorage.getItem("USER"));
+
     const data = {
       _id: id,
       sendData: Date.now(),
+      sendUserId: user._id,
       status: "inProcess"
     };
     const res = updatePackage(data, item.token);
     if (res === "error") {
       setErr(true);
-    }else{
+    } else {
       setErr(false);
-      navigation.navigate('Home')
+      navigation.navigate("Home");
     }
   };
 
@@ -81,16 +84,16 @@ const PackageInfo = ({ navigation }) => {
             {item.status !== "NotSend" ? (
               <View style={styles.btnBlock}>
                 <View>
-                  <TouchableOpacity onPress={take}>
+                  <TouchableOpacity onPress={transmit}>
                     <View style={styles.btn}>
-                      <Text style={styles.btnText}>Принять</Text>
+                      <Text style={styles.btnText}>Переслать</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
                 <View>
-                  <TouchableOpacity onPress={transmit}>
+                  <TouchableOpacity onPress={take}>
                     <View style={styles.btn}>
-                      <Text style={styles.btnText}>Переслать</Text>
+                      <Text style={styles.btnText}>Принять</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -153,9 +156,8 @@ const styles = StyleSheet.create({
   },
   err: {
     color: "red",
-    textAlign:'center'
-  },
-
+    textAlign: "center"
+  }
 });
 
 export default PackageInfo;

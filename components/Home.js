@@ -33,20 +33,22 @@ export default function Home({ navigation }) {
         isLogin: true,
         isLoading: false,
         token: res.token,
-        user: { username: res.username, id: res.id }
+        user: {
+          username: res.username,
+          id: res.id          
+        }
       });
-      _storeData(res.token, { username: res.username, id: res.id });
+      _storeData(res.token, { username: res.username, id: res.id,locationId: res.locationId });
     } else {
       setErr(true);
     }
   };
 
   openScaner = () => {
-    navigation.navigate('BarcodeScanner')
+    navigation.navigate("BarcodeScanner");
   };
 
   logout = () => {
-    
     setAuth({
       isLogin: false,
       isLoading: false,
@@ -62,8 +64,8 @@ export default function Home({ navigation }) {
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
       if (token && user) {
         setAuth({ ...auth, token, isLoading: false, user, isLogin: true });
-      }else{
-        setAuth({ ...auth, isLoading: false});
+      } else {
+        setAuth({ ...auth, isLoading: false });
       }
     } catch (error) {
       console.log(error);
@@ -92,19 +94,20 @@ export default function Home({ navigation }) {
     <View style={styles.container}>
       {auth.isLoading ? (
         <View style={styles.contentCenter}>
-         
-            <Image
-              style={styles.loading}
-              source={require("../assets/loading.gif")}
-            />
-        
+          <Image
+            style={styles.loading}
+            source={require("../assets/loading.gif")}
+          />
         </View>
       ) : auth.isLogin ? (
         <View style={styles.profileContainer}>
           <View style={styles.profile}>
             <Text style={styles.profileText}>{auth.user.username}</Text>
             <TouchableOpacity onPress={logout}>
-            <Image style={styles.exit} source={require("../assets/Exit.png")} />
+              <Image
+                style={styles.exit}
+                source={require("../assets/Exit.png")}
+              />
             </TouchableOpacity>
           </View>
           <TouchableOpacity onPress={openScaner}>
@@ -164,11 +167,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#000",
     borderRadius: 25,
-    padding: 10,
+    padding: 10
   },
   profileContainer: {
     flex: 1,
-    marginTop: 40, 
+    marginTop: 40
   },
   profileText: {
     fontSize: 20,
