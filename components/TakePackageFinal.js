@@ -13,7 +13,7 @@ const TakePackageFinal = ({ navigation }) => {
     try {
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
       const token = await AsyncStorage.getItem("TOKEN");
-debugger
+
       if (user.id && user.locationId && packageItem._id) {
         const data = {
           _id: packageItem._id,

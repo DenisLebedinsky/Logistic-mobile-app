@@ -5,8 +5,9 @@ import { createStackNavigator } from "react-navigation-stack";
 import BarcodeScanner from './components/BarCodeScaner';
 import PackageInfo from './components/PackageInfo';
 import Home from "./components/Home";
-import TakePackage from './components/TakePackage'
-import TakePackageFinal from './components/TakePackageFinal'
+import TakePackage from './components/TakePackage';
+import TakePackageFinal from './components/TakePackageFinal';
+import RedirectPackage from './components/RedirectPackage';
 
 const AppNavigator = createStackNavigator(
   {
@@ -24,6 +25,9 @@ const AppNavigator = createStackNavigator(
     },
     TakePackageFinal:{
       screen: TakePackageFinal
+    },
+    RedirectPackage:{
+      screen: RedirectPackage
     }
   },
   {

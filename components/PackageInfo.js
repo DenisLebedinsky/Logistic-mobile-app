@@ -37,7 +37,9 @@ const PackageInfo = ({ navigation }) => {
     navigation.navigate("TakePackage", { item });
   };
 
-  const transmit = () => {};
+  const transmit = () => {
+    navigation.navigate("RedirectPackage", { item });
+  };
 
   const send = async () => {
     const user = JSON.parse(await AsyncStorage.getItem("USER"));

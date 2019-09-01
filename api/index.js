@@ -52,3 +52,22 @@ export const updatePackage = async (data, token) => {
 
   return "error";
 };
+
+
+
+export const getLocations = async token => {
+  try {
+  
+      instance.defaults.headers.common['Authorization'] = `Baerer ${token}`;
+
+      const res = await instance.get('/locations');
+
+      if (res) {
+          return res.data;
+      }
+  } catch (err) {
+      console.log(err)
+  }
+
+  return 'error';
+}
