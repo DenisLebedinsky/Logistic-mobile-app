@@ -83,7 +83,7 @@ const PackageInfo = ({ navigation }) => {
             </View>
           )}
           <View style={styles.contentCenter}>
-            {item.status !== "NotSend" ? (
+            {item && item.status !== "NotSend" ? (
               <View style={styles.btnBlock}>
                 <View>
                   <TouchableOpacity onPress={transmit}>

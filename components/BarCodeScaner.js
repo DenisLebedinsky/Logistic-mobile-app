@@ -9,13 +9,17 @@ const BarcodeScanner = ({navigation}) => {
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    navigation.navigate('PackageInfo', {id:"5d6384abb5b4db0017c39995"})
     getPermissionsAsync();
   });
 
   getPermissionsAsync = async () => {
+    try{
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     setHasCameraPermission(status === "granted");
+    }
+    catch(err){
+      console.log(err)
+    }
   };
 
   handleBarCodeScanned = ({ type, data }) => {

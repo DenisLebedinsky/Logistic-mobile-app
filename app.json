@@ -1,19 +1,18 @@
 {
   "expo": {
-    "name": "Home",
-    "slug": "logistic-service",
+    "name": "LogisticService",
+    "description":"QR code scaner and package manager",
+    "slug": "Kuchenland-logistic",
     "privacy": "public",
     "sdkVersion": "34.0.0",
     "platforms": [
-      "ios",
-      "android",
-      "web"
+      "android"
     ],
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -23,8 +22,9 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
+    "android": {
+      "package": "com.Kuchenland.logisticservice",
+      "permissions":[ "CAMERA"]
     }
   }
 }
