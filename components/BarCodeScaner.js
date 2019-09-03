@@ -32,7 +32,8 @@ const BarcodeScanner = ({navigation}) => {
   if (hasCameraPermission === null) {
     return (
       <View style={styles.container}>
-        <Text>Requesting for camera permission</Text>
+        <Text>Получение разрешений</Text>
+        <Text>на использование камеры </Text>
       </View>
     );
   }

@@ -38,34 +38,44 @@ const RedirectPackage = ({ navigation }) => {
 
   const take = async () => {
     try {
+      debugger
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
       const token = await AsyncStorage.getItem("TOKEN");
-
+debugger
       let newDateArr = Date.now();
       if (item.transitSendData) {
         newDateArr = item.transitSendData;
         newDateArr.push(Date.now());
       }
 
+      let newTransitArr = selectLoc;
+      if (item.transitSendId) {
+        newTransitArr = item.transitSendId;
+        newTransitArr.push(selectLoc);
+      }
+      debugger
       if (user.id && selectLoc && item._id) {
         const data = {
           _id: item._id,
           LastSendlerId: user.id,
-          transitSendId: selectLoc,
+          transitSendId: newTransitArr,
           transitSendData: newDateArr
         };
-
+        debugger
         const res = await updatePackage(data, token);
 
         if (res === "error") {
           setErr(true);
         } else {
+          debugger
           navigation.navigate("Home");
         }
       } else {
+        debugger
         setErr(true);
       }
     } catch (error) {
+      debugger
       console.log(error);
     }
   };
