@@ -6,7 +6,8 @@ import {
   Picker,
   TextInput,
   AsyncStorage,
-  TouchableOpacity
+  TouchableOpacity,
+  ImageBackground
 } from "react-native";
 import { getLocations, updatePackage } from "../api";
 
@@ -38,44 +39,44 @@ const RedirectPackage = ({ navigation }) => {
 
   const take = async () => {
     try {
-      debugger
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
       const token = await AsyncStorage.getItem("TOKEN");
-debugger
-      let newDateArr = Date.now();
-      if (item.transitSendData) {
-        newDateArr = item.transitSendData;
-        newDateArr.push(Date.now());
+
+      let dateNow = Date.now();
+      
+      if (
+        item.transit.length > 0 &&
+        !item.transit[item.transit.length - 1].date
+      ) {
+        const lastItem = item.transit[item.transit.length - 1];
+
+        item.transit[item.transit.length - 1].date = dateNow;
+        item.transit[item.transit.length - 1].sendfactLocId =  user.locationId;
+      
+        item.transit[item.transit.length - 1].userId = user.id;
       }
 
-      let newTransitArr = selectLoc;
-      if (item.transitSendId) {
-        newTransitArr = item.transitSendId;
-        newTransitArr.push(selectLoc);
-      }
-      debugger
+      item.transit.push({
+        sendLocId: { title: selectLoc }
+      });
+
       if (user.id && selectLoc && item._id) {
         const data = {
           _id: item._id,
-          LastSendlerId: user.id,
-          transitSendId: newTransitArr,
-          transitSendData: newDateArr
+          transit: item.transit
         };
-        debugger
+debugger
         const res = await updatePackage(data, token);
-
+        
         if (res === "error") {
           setErr(true);
         } else {
-          debugger
           navigation.navigate("Home");
         }
       } else {
-        debugger
         setErr(true);
       }
     } catch (error) {
-      debugger
       console.log(error);
     }
   };
@@ -85,64 +86,76 @@ debugger
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.contentInfo}>
-        <View style={styles.info}>
-          <View>
-            <Text style={styles.headTitle}>Конечный получатель:</Text>
-            <Text style={styles.textCenter}>{item.factResiverId.title}</Text>
-          </View>
-          <Text style={styles.textCenter}>
-            Выберите нового получателя из списка
-          </Text>
-          <View style={styles.pickerBlock}>
-            <Picker
-              selectedValue={selectLoc}
-              style={styles.picker}
-              onValueChange={loc => handleChange(loc)}
-            >
-              {locations &&
-                locations.map(loc => (
-                  <Picker.Item
-                    label={loc.title}
-                    value={loc.title}
-                    key={loc._id}
-                  />
-                ))}
-            </Picker>
-          </View>
-          <Text style={styles.textCenter}>или введите вручную</Text>
-          <TextInput
-            style={styles.textInput}
-            onChangeText={loc => setSelectLoc(loc)}
-            value={selectLoc}
-          />
-        </View>
-      </View>
-      <View style={styles.contentCenter}>
-        {err && (
-          <View>
-            <Text style={styles.err}>Ошибка обновления, повторите попытку</Text>
-          </View>
-        )}
-        <View style={styles.btnBlock}>
-          <View>
-            <TouchableOpacity onPress={cancel}>
-              <View style={styles.btn}>
-                <Text style={styles.btnText}>Отменить</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View>
-            <TouchableOpacity onPress={take}>
-              <View style={styles.btn}>
-                <Text style={styles.btnText}>Отправить</Text>
-              </View>
-            </TouchableOpacity>
+    <ImageBackground
+      source={require("../assets/bg4.png")}
+      style={{ width: "100%", height: "100%" }}
+    >
+      <View style={styles.container}>
+        <View style={styles.contentInfo}>
+          <View style={styles.info}>
+            <View style={styles.colorBlock}>
+              <Text style={styles.headTitle}>Конечный получатель:</Text>
+              <Text style={(styles.textCenter, styles.textWihte)}>
+                {item.resiverId && item.resiverId.title}
+              </Text>
+            </View>
+            <Text style={styles.textCenter}>
+              Выберите нового получателя из списка
+            </Text>
+            <View style={(styles.pickerBlock, styles.colorBlock)}>
+              <Picker
+                selectedValue={selectLoc}
+                style={(styles.picker, styles.textWihte)}
+                onValueChange={loc => handleChange(loc)}
+              >
+                {locations &&
+                  locations.map(loc => (
+                    <Picker.Item
+                      label={loc.title}
+                      value={loc.title}
+                      key={loc._id}
+                    />
+                  ))}
+              </Picker>
+            </View>
+            <Text style={styles.textCenter}>или введите вручную</Text>
+            <TextInput
+              style={
+                (styles.textInput,
+                { ...styles.colorBlock, ...styles.textWihte })
+              }
+              onChangeText={loc => setSelectLoc(loc)}
+              value={selectLoc}
+            />
           </View>
         </View>
+        <View style={styles.contentCenter}>
+          {err && (
+            <View>
+              <Text style={styles.err}>
+                Ошибка обновления, повторите попытку
+              </Text>
+            </View>
+          )}
+          <View style={styles.btnBlock}>
+            <View>
+              <TouchableOpacity onPress={cancel}>
+                <View style={styles.btn}>
+                  <Text style={styles.btnText}>Отменить</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View>
+              <TouchableOpacity onPress={take}>
+                <View style={styles.btn}>
+                  <Text style={styles.btnText}>Отправить</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -166,10 +179,9 @@ const styles = StyleSheet.create({
     flex: 1
   },
   btn: {
-    backgroundColor: "blue",
+    backgroundColor: "#fa000c",
     marginHorizontal: 10,
-    padding: 10,
-    borderRadius: 25
+    padding: 10
   },
   btnText: {
     color: "#fff"
@@ -188,7 +200,8 @@ const styles = StyleSheet.create({
   headTitle: {
     fontWeight: "bold",
     marginBottom: 10,
-    textAlign: "center"
+    textAlign: "center",
+    color: "#fff"
   },
   err: {
     color: "red",
@@ -196,22 +209,31 @@ const styles = StyleSheet.create({
   },
   pickerBlock: {
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: "#fff",
     borderRadius: 25,
     padding: 10,
     margin: 5
   },
-  piker: {},
+  piker: {
+    color: "#fff"
+  },
   textInput: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 25,
     padding: 15,
-    margin: 5
+    margin: 5,
+    color: "#fff"
   },
   textCenter: {
     textAlign: "center",
-    marginVertical: 10
+    marginVertical: 10,
+    color: "#000",
+    fontWeight: "800"
+  },
+  colorBlock: {
+    backgroundColor: "#fa000c"
+  },
+  textWihte: {
+    color: "#fff",
+    padding: 10
   }
 });
 

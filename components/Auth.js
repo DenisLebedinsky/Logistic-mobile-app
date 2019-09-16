@@ -5,16 +5,15 @@ import {
   TextInput,
   View,
   KeyboardAvoidingView,
-  Button,
-  TouchableOpacity
+  TouchableOpacity, 
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const Auth = ({ signIn, err, setErr }) => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
   const autorize = () => {
-  
     signIn({ login: login.trim(), password });
   };
 
@@ -36,9 +35,9 @@ const Auth = ({ signIn, err, setErr }) => {
     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
       <View style={styles.container}>
         <View style={styles.block}>
-          <Text style={err && styles.errText}>Логин:</Text>
+          <Text style={styles.lable}>Логин:</Text>
           <TextInput
-            style={err ? styles.errInput : styles.input}
+            style={styles.input}
             textContentType="username"
             placeholder="введите логин..."
             onChangeText={changeLogin}
@@ -46,9 +45,9 @@ const Auth = ({ signIn, err, setErr }) => {
           />
         </View>
         <View style={styles.block}>
-          <Text style={err && styles.errText}>Пароль:</Text>
+          <Text style={styles.lable}>Пароль:</Text>
           <TextInput
-            style={err ? styles.errInput : styles.input}
+            style={styles.input}
             textContentType="password"
             secureTextEntry={true}
             placeholder="введите пароль..."
@@ -56,11 +55,23 @@ const Auth = ({ signIn, err, setErr }) => {
             value={password}
           />
         </View>
+
+        {err && (
+          <View>
+            <Text style={styles.errText}>Введены неверные логин и пароль</Text>
+          </View>
+        )}
+
         <View style={styles.btnBlock}>
           <TouchableOpacity onPress={autorize}>
             <View style={styles.btn}>
               <Text style={styles.btnText}>Войти</Text>
-              </View>            
+              <Ionicons
+                  name="md-log-in"
+                  size={32}
+                  color="#fff"
+                />
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -81,13 +92,18 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     margin: 10,
     borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 25,
+    borderColor: "#fff",
+    backgroundColor: "#fa000c",
     paddingHorizontal: 10,
-    width: 200
+    width: 200,
+    color: "#fff"
+  },
+  lable: {
+    color: "#fff"
   },
   input: {
-    padding: 10
+    padding: 10,
+    color: "#fff"
   },
   btnBlock: {
     width: 200,
@@ -98,25 +114,21 @@ const styles = StyleSheet.create({
   errText: {
     color: "#ab150a"
   },
-  errInput: {
-    padding: 10,
-    color: "#ab150a"
-  },
-  btn:{
-    display:'flex',
-    justifyContent:'center',
-    alignItems:'center',
-    width:200,
+  btn: {
+    display: "flex",
+    flexDirection:'row',
+    justifyContent: "center",
+    alignItems: "center",
+    width: 200,
     height: 45,
-    color:"#4a0ee3",
     borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 25,
+    backgroundColor: "#fa000c",
     padding: 10,
+    borderColor: "#fff"
   },
-  btnText:{
+  btnText: {
     padding: 10,
-    color:'#000'
+    color: "#fff"
   }
 });
 

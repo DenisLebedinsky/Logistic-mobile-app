@@ -5,14 +5,22 @@ import {
   View,
   Image,
   AsyncStorage,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
+  ImageBackground,
+  ScrollView,
+  FlatList
 } from "react-native";
 import { getPackageById, updatePackage } from "../api";
+import { Ionicons } from "@expo/vector-icons";
+import moment from 'moment';
 
 const PackageInfo = ({ navigation }) => {
   const id = navigation.getParam("id");
   const [item, setItem] = useState(null);
   const [err, setErr] = useState(false);
+  const [isOpenItems, setIsOpenItems] = useState(false);
+  const [isOpenTransit, setIsOpenTransit] = useState(false);
 
   useEffect(() => {
     if (!item) {
@@ -24,8 +32,8 @@ const PackageInfo = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("TOKEN");
       const res = await getPackageById(id, token);
-      if (res !== "error") {
-        console.log(res);
+      if (res !== "error") {     
+        console.log(res);   
         setItem({ ...res, token });
       }
     } catch (error) {
@@ -59,58 +67,142 @@ const PackageInfo = ({ navigation }) => {
     }
   };
 
+  const toggleItemList = () => {
+    setIsOpenItems(!isOpenItems);
+  };
+
+  const toggleTransitList = () => {
+    setIsOpenTransit(!isOpenTransit);
+  };
+
   return (
-    <View style={styles.container}>
-      {!item && (
-        <Image
-          style={styles.loading}
-          source={require("../assets/loading.gif")}
-        />
-      )}
-      {item && (
-        <View>
-          <View style={styles.contentInfo}>
-            <View style={styles.info}>
-              <Text>Получатель:</Text>
-              <Text>{item.resiverId && item.resiverId.title}</Text>
-            </View>
-          </View>
-          {err && (
-            <View>
-              <Text style={styles.err}>
-                Ошибка обновления статуса, повторите попытку
-              </Text>
-            </View>
-          )}
-          <View style={styles.contentCenter}>
-            {item && item.status !== "NotSend" ? (
-              <View style={styles.btnBlock}>
-                <View>
-                  <TouchableOpacity onPress={transmit}>
-                    <View style={styles.btn}>
-                      <Text style={styles.btnText}>Переслать</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-                <View>
-                  <TouchableOpacity onPress={take}>
-                    <View style={styles.btn}>
-                      <Text style={styles.btnText}>Принять</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
+    <ImageBackground
+      source={require("../assets/bg4.png")}
+      style={{ width: "100%", height: "100%" }}
+    >
+      <View style={styles.container}>
+        {!item && <ActivityIndicator size="large" color="#fa000c" />}
+        {item && (
+          <View>
+            <View style={styles.contentInfo}>
+              <View style={styles.info}>
+                <Text style={styles.textheader}>Получатель:</Text>
+                <Text style={styles.text}>
+                  {item.resiverId && item.resiverId.title}
+                </Text>
               </View>
-            ) : (
-              <TouchableOpacity onPress={send}>
-                <View style={styles.btn}>
-                  <Text style={styles.btnText}>Отправить</Text>
-                </View>
-              </TouchableOpacity>
+
+              <View style={styles.listBlock}>
+                <TouchableOpacity onPress={toggleItemList}>
+                  <View style={styles.listbtn}>
+                    <Text style={styles.btnText}>
+                      {isOpenItems
+                        ? "Cкрыть список предметов"
+                        : "Показать список предметов"}
+                    </Text>
+                    <Ionicons name="md-list" size={32} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+
+                {isOpenItems && (
+                  <View>
+                    <ScrollView>
+                      <FlatList
+                        data={item.inventory}
+                        renderItem={({ item }) => (
+                          <View style={styles.list}>
+                            <View style={styles.titleItem}>
+                              <Text style={styles.listText}>{item.title}</Text>
+                            </View>
+                            <View style={styles.countItem}>
+                              <Text style={styles.listText}>{item.count}</Text>
+                            </View>
+                          </View>
+                        )}
+                        keyExtractor={item => item._id.toString()}
+                      ></FlatList>
+                    </ScrollView>
+                  </View>
+                )}               
+              </View>
+
+              <View style={styles.listBlock}>
+                <TouchableOpacity onPress={toggleTransitList}>
+                  <View style={styles.listbtn}>
+                    <Text style={styles.btnText}>
+                      {isOpenTransit
+                        ? "Cкрыть список отправителей"
+                        : "Показать список отправителей"}
+                    </Text>
+                    <Ionicons name="md-list" size={32} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+
+            
+                {isOpenTransit && item.transit.length > 0 && (
+                  <View>
+                    <ScrollView>
+                      <FlatList
+                        data={item.transit}
+                        renderItem={({ item }) => (
+                          <View style={styles.list}>
+                            <View style={styles.titleItemT}>
+                              <Text style={styles.listText}>{item.sendLocId && item.sendLocId.title}</Text>
+                            </View>
+                            <View style={styles.countItemT}>
+                              <Text style={styles.listText}>{item.date && moment(item.date).format("DD.MM.YYYY hh:mm")}</Text>
+                            </View>
+                          </View>
+                        )}
+                        keyExtractor={item => 'transit_'+ item._id}
+                      ></FlatList>
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {err && (
+              <View>
+                <Text style={styles.err}>
+                  Ошибка обновления статуса, повторите попытку
+                </Text>
+              </View>
             )}
+            <View style={styles.contentCenter}>
+              {item && item.status !== "NotSend" ? (
+                <View style={styles.btnBlock}>
+                  <View>
+                    <TouchableOpacity onPress={transmit}>
+                      <View style={styles.btn}>
+                        <Text style={styles.btnText}>Переслать</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                  <View>
+                    <TouchableOpacity onPress={take}>
+                      <View style={styles.btn}>
+                        <Text style={styles.btnText}>
+                          {item.transit.length > 0
+                            ? "Принять и закончить маршрут"
+                            : "Принять"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity onPress={send}>
+                  <View style={styles.btn}>
+                    <Text style={styles.btnText}>Отправить</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </ImageBackground>
   );
 };
 
@@ -131,19 +223,66 @@ const styles = StyleSheet.create({
     marginTop: 30
   },
   info: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 25,
+    backgroundColor: "#fa000c",
     padding: 15
   },
   loading: {
     width: 200,
     height: 200
   },
+  text: {
+    textAlign: "center",
+    color: "#fff"
+  },
+  textheader: {
+    textAlign: "center",
+    color: "#fff",
+    fontWeight: "800"
+  },
+  listBlock: {
+    flex: 1,
+    textAlign: "center",
+    marginTop: 30,
+    minWidth: 300
+  },
+  list: {
+    flex: 1,
+    flexDirection: "row",
+    width: "100%",
+    borderBottomWidth: 1,
+    borderBottomColor: "#fff",
+    justifyContent: "space-between",
+    backgroundColor: "#fa000c",
+    padding: 10
+  },
+  titleItem: {
+    width: "70%"
+  },
+  countItem: {
+    width: "20%"
+  },
+  titleItemT: {
+    width: "55%"
+  },
+  countItemT: {
+    width: "40%"
+  },
+  listText: {
+    color: "#fff"
+  },
+  listbtn: {
+    display: "flex",
+    flexDirection: "row",
+    backgroundColor: "#fa000c",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 10
+  },
   btn: {
-    backgroundColor: "blue",
+    backgroundColor: "#fa000c",
     padding: 10,
-    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "#fff",
     margin: 10
   },
   btnText: {

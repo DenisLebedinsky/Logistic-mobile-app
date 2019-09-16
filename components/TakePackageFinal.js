@@ -111,10 +111,10 @@ const styles = StyleSheet.create({
     height: 200
   },
   btn: {
-    backgroundColor: "blue",
+    backgroundColor: "#fa000c",
     marginHorizontal: 10,
     padding: 10,
-    borderRadius: 25
+    
   },
   btnText: {
     color: "#fff"
@@ -146,9 +146,9 @@ const styles = StyleSheet.create({
   textInput: {
     padding: 10,
     textAlignVertical: "top",
-    borderColor: "gray",
+    borderColor: "#fa000c",
     borderWidth: 1,
-    borderRadius: 25
+   
   },
   err: {
     color: "red",

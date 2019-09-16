@@ -5,8 +5,11 @@ import {
   View,
   Image,
   AsyncStorage,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
+  ImageBackground
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Auth from "./Auth";
 import { signIn } from "../api";
 
@@ -35,10 +38,14 @@ export default function Home({ navigation }) {
         token: res.token,
         user: {
           username: res.username,
-          id: res.id          
+          id: res.id
         }
       });
-      _storeData(res.token, { username: res.username, id: res.id,locationId: res.locationId });
+      _storeData(res.token, {
+        username: res.username,
+        id: res.id,
+        locationId: res.locationId
+      });
     } else {
       setErr(true);
     }
@@ -91,40 +98,43 @@ export default function Home({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      {auth.isLoading ? (
-        <View style={styles.contentCenter}>
-          <Image
-            style={styles.loading}
-            source={require("../assets/loading.gif")}
-          />
-        </View>
-      ) : auth.isLogin ? (
-        <View style={styles.profileContainer}>
-          <View style={styles.profile}>
-            <Text style={styles.profileText}>{auth.user.username}</Text>
-            <TouchableOpacity onPress={logout}>
-              <Image
-                style={styles.exit}
-                source={require("../assets/Exit.png")}
-              />
+    <ImageBackground
+      source={require("../assets/bg4.png")}
+      style={{ width: "100%", height: "100%" }}
+    >
+      <View style={styles.container}>
+        {auth.isLoading ? (
+          <View style={styles.contentCenter}>
+            <ActivityIndicator size="large" color="#fa000c" />
+          </View>
+        ) : auth.isLogin ? (
+          <View style={styles.profileContainer}>
+            <View style={styles.profile}>
+              <Text style={styles.profileText}>{auth.user.username}</Text>
+              <TouchableOpacity onPress={logout}>
+                <Ionicons
+                  name="md-log-out"
+                  size={32}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={openScaner}>
+              <View style={styles.contentCenter}>
+                <Image
+                  style={styles.stretch}
+                  source={require("../assets/scan.jpg")}
+                />
+              </View>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={openScaner}>
-            <View style={styles.contentCenter}>
-              <Image
-                style={styles.stretch}
-                source={require("../assets/scan.jpg")}
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.contentCenter}>
-          <Auth signIn={signInMethod} err={err} setErr={setErr} />
-        </View>
-      )}
-    </View>
+        ) : (
+          <View style={styles.contentCenter}>
+            <Auth signIn={signInMethod} err={err} setErr={setErr} />
+          </View>
+        )}
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -166,8 +176,9 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     borderWidth: 1,
     borderColor: "#000",
-    borderRadius: 25,
-    padding: 10
+    borderColor: "#fff",
+    backgroundColor: "#fa000c",
+    padding: 30
   },
   profileContainer: {
     flex: 1,
@@ -175,6 +186,7 @@ const styles = StyleSheet.create({
   },
   profileText: {
     fontSize: 20,
-    marginRight: 10
+    marginRight: 30,
+    color: "#fff"
   }
 });
