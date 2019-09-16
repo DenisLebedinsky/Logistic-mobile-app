@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "LogisticService",
+    "name": "Kuchenland Logistic",
     "description":"QR code scaner and package manager",
-    "slug": "Kuchenland-logistic",
+    "slug": "Kuchenland Logistic",
     "privacy": "public",
     "sdkVersion": "34.0.0",
     "platforms": [
