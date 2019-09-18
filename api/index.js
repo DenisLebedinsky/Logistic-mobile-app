@@ -9,7 +9,7 @@ export const signIn = async data => {
     const res = await instance.post("/users/login", data);
 
     if (res && res.data.hasOwnProperty("token")) {
-        console.log(res.data)
+       
       return res.data;
     }
   } catch (err) {
@@ -40,7 +40,7 @@ export const getPackageById = async (id, token) => {
 export const updatePackage = async (data, token) => {
   try {
     instance.defaults.headers.common["Authorization"] = `Baerer ${token}`;
-
+ 
     const res = await instance.post("/package/update", data);
 
     if (res) {

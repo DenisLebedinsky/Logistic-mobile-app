@@ -48,8 +48,7 @@ const RedirectPackage = ({ navigation }) => {
         item.transit.length > 0 &&
         !item.transit[item.transit.length - 1].date
       ) {
-        const lastItem = item.transit[item.transit.length - 1];
-
+      
         item.transit[item.transit.length - 1].date = dateNow;
         item.transit[item.transit.length - 1].sendfactLocId =  user.locationId;
       
@@ -65,7 +64,7 @@ const RedirectPackage = ({ navigation }) => {
           _id: item._id,
           transit: item.transit
         };
-debugger
+
         const res = await updatePackage(data, token);
         
         if (res === "error") {

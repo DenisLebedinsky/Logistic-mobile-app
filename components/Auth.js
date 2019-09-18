@@ -5,11 +5,11 @@ import {
   TextInput,
   View,
   KeyboardAvoidingView,
-  TouchableOpacity, 
+  TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const Auth = ({ signIn, err, setErr }) => {
+const Auth = ({ signIn, err, setErr, isLoading }) => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,48 +33,52 @@ const Auth = ({ signIn, err, setErr }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
-      <View style={styles.container}>
-        <View style={styles.block}>
-          <Text style={styles.lable}>Логин:</Text>
-          <TextInput
-            style={styles.input}
-            textContentType="username"
-            placeholder="введите логин..."
-            onChangeText={changeLogin}
-            value={login}
-          />
+      {isLoading ? (
+        <View style={styles.contentCenter}>
+          <ActivityIndicator size="large" color="#fa000c" />
         </View>
-        <View style={styles.block}>
-          <Text style={styles.lable}>Пароль:</Text>
-          <TextInput
-            style={styles.input}
-            textContentType="password"
-            secureTextEntry={true}
-            placeholder="введите пароль..."
-            onChangeText={changePassword}
-            value={password}
-          />
-        </View>
-
-        {err && (
-          <View>
-            <Text style={styles.errText}>Введены неверные логин и пароль</Text>
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.block}>
+            <Text style={styles.lable}>Логин:</Text>
+            <TextInput
+              style={styles.input}
+              textContentType="username"
+              placeholder="введите логин..."
+              onChangeText={changeLogin}
+              value={login}
+            />
           </View>
-        )}
+          <View style={styles.block}>
+            <Text style={styles.lable}>Пароль:</Text>
+            <TextInput
+              style={styles.input}
+              textContentType="password"
+              secureTextEntry={true}
+              placeholder="введите пароль..."
+              onChangeText={changePassword}
+              value={password}
+            />
+          </View>
 
-        <View style={styles.btnBlock}>
-          <TouchableOpacity onPress={autorize}>
-            <View style={styles.btn}>
-              <Text style={styles.btnText}>Войти</Text>
-              <Ionicons
-                  name="md-log-in"
-                  size={32}
-                  color="#fff"
-                />
+          {err && (
+            <View>
+              <Text style={styles.errText}>
+                Введены неверные логин и пароль
+              </Text>
             </View>
-          </TouchableOpacity>
+          )}
+
+          <View style={styles.btnBlock}>
+            <TouchableOpacity onPress={autorize}>
+              <View style={styles.btn}>
+                <Text style={styles.btnText}>Войти</Text>
+                <Ionicons name="md-log-in" size={32} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -116,7 +120,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     display: "flex",
-    flexDirection:'row',
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     width: 200,

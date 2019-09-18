@@ -130,7 +130,7 @@ export default function Home({ navigation }) {
           </View>
         ) : (
           <View style={styles.contentCenter}>
-            <Auth signIn={signInMethod} err={err} setErr={setErr} />
+            <Auth signIn={signInMethod} err={err} setErr={setErr} isLoading={auth.isLoading}/>
           </View>
         )}
       </View>

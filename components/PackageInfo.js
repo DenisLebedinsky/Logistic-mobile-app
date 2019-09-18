@@ -33,7 +33,7 @@ const PackageInfo = ({ navigation }) => {
       const token = await AsyncStorage.getItem("TOKEN");
       const res = await getPackageById(id, token);
       if (res !== "error") {     
-        console.log(res);   
+      
         setItem({ ...res, token });
       }
     } catch (error) {
