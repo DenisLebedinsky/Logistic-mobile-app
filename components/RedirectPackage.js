@@ -43,30 +43,36 @@ const RedirectPackage = ({ navigation }) => {
       const token = await AsyncStorage.getItem("TOKEN");
 
       let dateNow = Date.now();
-      
+
       if (
         item.transit.length > 0 &&
         !item.transit[item.transit.length - 1].date
       ) {
-      
         item.transit[item.transit.length - 1].date = dateNow;
-        item.transit[item.transit.length - 1].sendfactLocId =  user.locationId;
-      
+        item.transit[item.transit.length - 1].sendfactLocId = user.locationId;
         item.transit[item.transit.length - 1].userId = user.id;
       }
 
-      item.transit.push({
-        sendLocId: { title: selectLoc }
-      });
+      if (
+        !(
+          item.resiverId._id === selectLoc ||
+          item.resiverId.title.toLowerCase() === selectLoc.toLowerCase()
+        )
+      ) {
+        item.transit.push({
+          sendLocId: { title: selectLoc }
+        });
+      }
 
       if (user.id && selectLoc && item._id) {
         const data = {
           _id: item._id,
-          transit: item.transit
+          transit: item.transit,
+          test:item.resiverId
         };
 
         const res = await updatePackage(data, token);
-        
+
         if (res === "error") {
           setErr(true);
         } else {
@@ -74,7 +80,6 @@ const RedirectPackage = ({ navigation }) => {
         }
       } else {
         setErr(true);
-     
       }
     } catch (error) {
       console.log(error);

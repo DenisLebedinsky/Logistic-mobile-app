@@ -25,6 +25,9 @@
     "android": {
       "package": "com.Kuchenland.logisticservice",
       "permissions":[ "CAMERA"]
+    },
+    "ios": {
+      "bundleIdentifier": "com.Kuchenland.logisticservice"
     }
   }
 }
