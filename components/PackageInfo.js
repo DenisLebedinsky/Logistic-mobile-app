@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { getPackageById, updatePackage } from "../api";
 import { Ionicons } from "@expo/vector-icons";
-import moment from 'moment';
+import moment from "moment";
 
 const PackageInfo = ({ navigation }) => {
   const id = navigation.getParam("id");
@@ -32,8 +32,7 @@ const PackageInfo = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("TOKEN");
       const res = await getPackageById(id, token);
-      if (res !== "error") {     
-      
+      if (res !== "error") {
         setItem({ ...res, token });
       }
     } catch (error) {
@@ -52,10 +51,12 @@ const PackageInfo = ({ navigation }) => {
   const send = async () => {
     const user = JSON.parse(await AsyncStorage.getItem("USER"));
 
+    console.log(user)
+    
     const data = {
       _id: id,
       sendData: Date.now(),
-      sendUserId: user._id,
+      sendUserId: user.id,
       status: "inProcess"
     };
     const res = updatePackage(data, item.token);
@@ -63,7 +64,7 @@ const PackageInfo = ({ navigation }) => {
       setErr(true);
     } else {
       setErr(false);
-      navigation.navigate("Home");
+      navigation.navigate("ShowStatus");
     }
   };
 
@@ -73,6 +74,48 @@ const PackageInfo = ({ navigation }) => {
 
   const toggleTransitList = () => {
     setIsOpenTransit(!isOpenTransit);
+  };
+
+  const getSendBtn = () => {
+    return (
+      <TouchableOpacity onPress={send}>
+        <View style={styles.btn}>
+          <Text style={styles.btnText}>Отправить</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const getSelectBtn = status => {
+    if (status === "accepted") {
+      return (
+        <View>
+          <Text style={styles.err}>Комплект уже принят!</Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.btnBlock}>
+        <View>
+          <TouchableOpacity onPress={transmit}>
+            <View style={styles.btn}>
+              <Text style={styles.btnText}>Переслать</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity onPress={take}>
+            <View style={styles.btn}>
+              <Text style={styles.btnText}>
+                {item.transit.length > 0
+                  ? "Принять и закончить маршрут"
+                  : "Принять"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -123,7 +166,7 @@ const PackageInfo = ({ navigation }) => {
                       ></FlatList>
                     </ScrollView>
                   </View>
-                )}               
+                )}
               </View>
 
               <View style={styles.listBlock}>
@@ -138,7 +181,6 @@ const PackageInfo = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
 
-            
                 {isOpenTransit && item.transit.length > 0 && (
                   <View>
                     <ScrollView>
@@ -147,14 +189,19 @@ const PackageInfo = ({ navigation }) => {
                         renderItem={({ item }) => (
                           <View style={styles.list}>
                             <View style={styles.titleItemT}>
-                              <Text style={styles.listText}>{item.sendLocId && item.sendLocId.title}</Text>
+                              <Text style={styles.listText}>
+                                {item.sendLocId && item.sendLocId.title}
+                              </Text>
                             </View>
                             <View style={styles.countItemT}>
-                              <Text style={styles.listText}>{item.date && moment(item.date).format("DD.MM.YYYY hh:mm")}</Text>
+                              <Text style={styles.listText}>
+                                {item.date &&
+                                  moment(item.date).format("DD.MM.YYYY hh:mm")}
+                              </Text>
                             </View>
                           </View>
                         )}
-                        keyExtractor={item => 'transit_'+ item._id}
+                        keyExtractor={item => "transit_" + item._id}
                       ></FlatList>
                     </ScrollView>
                   </View>
@@ -170,34 +217,9 @@ const PackageInfo = ({ navigation }) => {
               </View>
             )}
             <View style={styles.contentCenter}>
-              {item && item.status !== "NotSend" ? (
-                <View style={styles.btnBlock}>
-                  <View>
-                    <TouchableOpacity onPress={transmit}>
-                      <View style={styles.btn}>
-                        <Text style={styles.btnText}>Переслать</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                  <View>
-                    <TouchableOpacity onPress={take}>
-                      <View style={styles.btn}>
-                        <Text style={styles.btnText}>
-                          {item.transit.length > 0
-                            ? "Принять и закончить маршрут"
-                            : "Принять"}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity onPress={send}>
-                  <View style={styles.btn}>
-                    <Text style={styles.btnText}>Отправить</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
+              {item && item.status !== "notSent"
+                ? getSelectBtn(item.status)
+                : getSendBtn()}
             </View>
           </View>
         )}

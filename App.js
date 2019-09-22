@@ -2,12 +2,13 @@ import React from "react";
 import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 
-import BarcodeScanner from './components/BarCodeScaner';
-import PackageInfo from './components/PackageInfo';
+import BarcodeScanner from "./components/BarCodeScaner";
+import PackageInfo from "./components/PackageInfo";
 import Home from "./components/Home";
-import TakePackage from './components/TakePackage';
-import TakePackageFinal from './components/TakePackageFinal';
-import RedirectPackage from './components/RedirectPackage';
+import TakePackage from "./components/TakePackage";
+import TakePackageFinal from "./components/TakePackageFinal";
+import RedirectPackage from "./components/RedirectPackage";
+import ShowStatus from "./components/ShowStatus"
 
 const AppNavigator = createStackNavigator(
   {
@@ -20,15 +21,18 @@ const AppNavigator = createStackNavigator(
     PackageInfo: {
       screen: PackageInfo
     },
-    TakePackage:{
+    TakePackage: {
       screen: TakePackage
     },
-    TakePackageFinal:{
+    TakePackageFinal: {
       screen: TakePackageFinal
     },
-    RedirectPackage:{
+    RedirectPackage: {
       screen: RedirectPackage
-    }
+    },
+    ShowStatus: {
+      screen: ShowStatus
+    },
   },
   {
     defaultNavigationOptions: {

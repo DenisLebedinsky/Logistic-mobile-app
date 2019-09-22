@@ -28,7 +28,7 @@ const TakePackageFinal = ({ navigation }) => {
         if (res === "error") {
           ssetErr(true);
         } else {
-          navigation.navigate("Home");
+          navigation.navigate("ShowStatus");
         }
       } else {
         ssetErr(true);

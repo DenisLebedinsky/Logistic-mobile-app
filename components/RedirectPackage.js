@@ -70,10 +70,11 @@ const RedirectPackage = ({ navigation }) => {
         if (res === "error") {
           setErr(true);
         } else {
-          navigation.navigate("Home");
+          navigation.navigate("ShowStatus");
         }
       } else {
         setErr(true);
+     
       }
     } catch (error) {
       console.log(error);
