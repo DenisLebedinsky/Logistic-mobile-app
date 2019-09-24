@@ -174,8 +174,8 @@ const PackageInfo = ({ navigation }) => {
                   <View style={styles.listbtn}>
                     <Text style={styles.btnText}>
                       {isOpenTransit
-                        ? "Cкрыть список отправителей"
-                        : "Показать список отправителей"}
+                        ? "Cкрыть транзитные пункты"
+                        : "Показать транзитные пункты"}
                     </Text>
                     <Ionicons name="md-list" size={32} color="#fff" />
                   </View>
