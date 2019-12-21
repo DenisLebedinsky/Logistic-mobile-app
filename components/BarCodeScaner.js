@@ -24,7 +24,7 @@ const BarcodeScanner = ({navigation}) => {
 
   handleBarCodeScanned = ({ type, data }) => {
   
-   // setScanned(true);
+    setScanned(true);
     
     navigation.navigate('PackageInfo', {id:data})
   };
