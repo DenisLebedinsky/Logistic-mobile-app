@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://194.246.80.173:3000"
+  baseURL: "https://kuhenland-test.herokuapp.com" //"http://194.246.80.173:3000"
 });
 
 export const signIn = async data => {
@@ -9,7 +9,6 @@ export const signIn = async data => {
     const res = await instance.post("/users/login", data);
 
     if (res && res.data.hasOwnProperty("token")) {
-       
       return res.data;
     }
   } catch (err) {
@@ -40,7 +39,7 @@ export const getPackageById = async (id, token) => {
 export const updatePackage = async (data, token) => {
   try {
     instance.defaults.headers.common["Authorization"] = `Baerer ${token}`;
- 
+
     const res = await instance.post("/package/update", data);
 
     if (res) {
@@ -53,21 +52,18 @@ export const updatePackage = async (data, token) => {
   return "error";
 };
 
-
-
 export const getLocations = async token => {
   try {
-  
-      instance.defaults.headers.common['Authorization'] = `Baerer ${token}`;
+    instance.defaults.headers.common["Authorization"] = `Baerer ${token}`;
 
-      const res = await instance.get('/locations');
+    const res = await instance.get("/locations");
 
-      if (res) {
-          return res.data;
-      }
+    if (res) {
+      return res.data;
+    }
   } catch (err) {
-      console.log(err)
+    console.log(err);
   }
 
-  return 'error';
-}
+  return "error";
+};

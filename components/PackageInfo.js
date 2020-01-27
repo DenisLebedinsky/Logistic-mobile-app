@@ -21,12 +21,19 @@ const PackageInfo = ({ navigation }) => {
   const [err, setErr] = useState(false);
   const [isOpenItems, setIsOpenItems] = useState(false);
   const [isOpenTransit, setIsOpenTransit] = useState(false);
+  const [user, setUser] = useState();
 
   useEffect(() => {
-    if (!item) {
+    if (!item && user) {
       getPackage();
     }
   });
+
+  useEffect(() => {
+    if (!user) {
+      setUser(JSON.parse(await AsyncStorage.getItem("USER")))
+    }
+  }, user)
 
   const getPackage = async () => {
     try {
@@ -49,15 +56,11 @@ const PackageInfo = ({ navigation }) => {
   };
 
   const send = async () => {
-    const user = JSON.parse(await AsyncStorage.getItem("USER"));
-
-    console.log(user)
-    
     const data = {
       _id: id,
       sendData: Date.now(),
       sendUserId: user.id,
-      status: "inProcess"
+      status: "передано в доставку"
     };
     const res = updatePackage(data, item.token);
     if (res === "error") {
@@ -105,13 +108,20 @@ const PackageInfo = ({ navigation }) => {
         </View>
         <View>
           <TouchableOpacity onPress={take}>
-            <View style={styles.btn}>
-              <Text style={styles.btnText}>
-                {item.transit.length > 0
-                  ? "Принять и закончить маршрут"
-                  : "Принять"}
+            {user.locationId !== item.reciverId._id ?
+              (<View style={styles.btn}>
+                <Text style={styles.btnText}>
+                  Принять на транзитный склад
               </Text>
-            </View>
+              </View>)
+              :
+              (<View style={styles.btn}>
+                <Text style={styles.btnText}>
+                  {item.transit.length > 0
+                    ? "Принять и закончить маршрут"
+                    : "Принять"}
+                </Text>
+              </View>)}
           </TouchableOpacity>
         </View>
       </View>
@@ -131,7 +141,7 @@ const PackageInfo = ({ navigation }) => {
               <View style={styles.info}>
                 <Text style={styles.textheader}>Получатель:</Text>
                 <Text style={styles.text}>
-                  {item.resiverId && item.resiverId.title}
+                  {item.reciverId && item.reciverId.title}
                 </Text>
               </View>
 

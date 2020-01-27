@@ -9,6 +9,7 @@ import TakePackage from "./components/TakePackage";
 import TakePackageFinal from "./components/TakePackageFinal";
 import RedirectPackage from "./components/RedirectPackage";
 import ShowStatus from "./components/ShowStatus"
+import DriverDetails from './components/DriverDetails';
 
 const AppNavigator = createStackNavigator(
   {
@@ -32,6 +33,9 @@ const AppNavigator = createStackNavigator(
     },
     ShowStatus: {
       screen: ShowStatus
+    },
+    DriverDetails: {
+      screen: DriverDetails
     },
   },
   {

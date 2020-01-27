@@ -19,8 +19,8 @@ const TakePackageFinal = ({ navigation }) => {
           _id: packageItem._id,
           status: "accepted",
           recipientId: user.id,
-          factResiverId: user.locationId,
-          resiveData: Date.now(),
+          factreciverId: user.locationId,
+          reciveData: Date.now(),
           comment: comment
         };
 
@@ -59,9 +59,7 @@ const TakePackageFinal = ({ navigation }) => {
       <View style={styles.contentCenter}>
         {err && (
           <View>
-            <Text style={styles.err}>
-              Ошибка обновления, повторите попытку
-            </Text>
+            <Text style={styles.err}>Ошибка обновления, повторите попытку</Text>
           </View>
         )}
         <View style={styles.btnBlock}>
@@ -113,8 +111,7 @@ const styles = StyleSheet.create({
   btn: {
     backgroundColor: "#fa000c",
     marginHorizontal: 10,
-    padding: 10,
-    
+    padding: 10
   },
   btnText: {
     color: "#fff"
@@ -147,8 +144,7 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlignVertical: "top",
     borderColor: "#fa000c",
-    borderWidth: 1,
-   
+    borderWidth: 1
   },
   err: {
     color: "red",

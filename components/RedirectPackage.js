@@ -37,7 +37,7 @@ const RedirectPackage = ({ navigation }) => {
     setSelectLoc(loc);
   };
 
-  const take = async () => {
+  const resend = async () => {
     try {
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
       const token = await AsyncStorage.getItem("TOKEN");
@@ -55,8 +55,8 @@ const RedirectPackage = ({ navigation }) => {
 
       if (
         !(
-          item.resiverId._id === selectLoc ||
-          item.resiverId.title.toLowerCase() === selectLoc.toLowerCase()
+          item.reciverId._id === selectLoc ||
+          item.reciverId.title.toLowerCase() === selectLoc.toLowerCase()
         )
       ) {
         item.transit.push({
@@ -68,16 +68,11 @@ const RedirectPackage = ({ navigation }) => {
         const data = {
           _id: item._id,
           transit: item.transit,
-          test:item.resiverId
+          test: item.reciverId,
+          status: "передано в доставку"
         };
 
-        const res = await updatePackage(data, token);
-
-        if (res === "error") {
-          setErr(true);
-        } else {
-          navigation.navigate("ShowStatus");
-        }
+        navigation.navigate("RedirectPackage", { data, token });
       } else {
         setErr(true);
       }
@@ -101,7 +96,7 @@ const RedirectPackage = ({ navigation }) => {
             <View style={styles.colorBlock}>
               <Text style={styles.headTitle}>Конечный получатель:</Text>
               <Text style={(styles.textCenter, styles.textWihte)}>
-                {item.resiverId && item.resiverId.title}
+                {item.reciverId && item.reciverId.title}
               </Text>
             </View>
             <Text style={styles.textCenter}>
@@ -151,7 +146,7 @@ const RedirectPackage = ({ navigation }) => {
               </TouchableOpacity>
             </View>
             <View>
-              <TouchableOpacity onPress={take}>
+              <TouchableOpacity onPress={resend}>
                 <View style={styles.btn}>
                   <Text style={styles.btnText}>Отправить</Text>
                 </View>
