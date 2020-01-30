@@ -22,6 +22,7 @@ const PackageInfo = ({ navigation }) => {
   const [isOpenItems, setIsOpenItems] = useState(false);
   const [isOpenTransit, setIsOpenTransit] = useState(false);
   const [user, setUser] = useState();
+  const [token, setToken] = useState('')
 
   useEffect(() => {
     if (!item && user) {
@@ -31,13 +32,18 @@ const PackageInfo = ({ navigation }) => {
 
   useEffect(() => {
     if (!user) {
-      setUser(JSON.parse(await AsyncStorage.getItem("USER")))
+      getusrFromStore();
     }
-  }, user)
+  }, [user])
+
+  const getusrFromStore = async () => {
+    setUser(JSON.parse(await AsyncStorage.getItem("USER")))
+  }
 
   const getPackage = async () => {
     try {
       const token = await AsyncStorage.getItem("TOKEN");
+      setToken(token);
       const res = await getPackageById(id, token);
       if (res !== "error") {
         setItem({ ...res, token });
@@ -48,6 +54,9 @@ const PackageInfo = ({ navigation }) => {
   };
 
   const take = () => {
+    if (user.locationId !== item.reciverId._id) {
+      navigation.navigate("TakePackage", { item, transit: true });
+    }
     navigation.navigate("TakePackage", { item });
   };
 
@@ -62,13 +71,8 @@ const PackageInfo = ({ navigation }) => {
       sendUserId: user.id,
       status: "передано в доставку"
     };
-    const res = updatePackage(data, item.token);
-    if (res === "error") {
-      setErr(true);
-    } else {
-      setErr(false);
-      navigation.navigate("ShowStatus");
-    }
+
+    navigation.navigate("DriverDetails", { data, token });
   };
 
   const toggleItemList = () => {
@@ -97,6 +101,7 @@ const PackageInfo = ({ navigation }) => {
         </View>
       );
     }
+
     return (
       <View style={styles.btnBlock}>
         <View>

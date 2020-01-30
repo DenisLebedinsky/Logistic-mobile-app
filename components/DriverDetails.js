@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
+  TextInput,
   View,
   ImageBackground,
+  TouchableOpacity,
   Button
 } from "react-native";
 import { getPackageById, updatePackage } from "../api";
@@ -16,15 +18,17 @@ const DriverDetails = ({ navigation }) => {
 
   const [driverName, serDrivername] = useState('')
   const [regNumber, serregNumber] = useState('')
-  const [error, setError] = useState(true);
-  const update = () => {
-
+  const [error, setError] = useState(false);
+  
+  const update = async () => {
+    
     data.note = {
       regNumber: regNumber,
       driverFullname: driverName,
     };
 
     const res = await updatePackage(data, token);
+
 
     if (res === "error") {
       setError(true)
@@ -67,7 +71,12 @@ const DriverDetails = ({ navigation }) => {
                 />
               </View>
             </View>)}
-        <Button styles={styles.btn} onClick={update}>Отправить</Button>
+
+        <TouchableOpacity onPress={update}>
+              <View style={styles.btn}>
+                <Text style={styles.btnText}>Отправить</Text>
+              </View>
+            </TouchableOpacity>
       </View>
 
     </ImageBackground>
@@ -91,12 +100,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 10,
     color: "#000",
-    fontWeight: "800"
+    fontWeight: "800",
+    fontSize: 24, 
+    minWidth: 300
   },
   btn: {
+    marginTop: 20,
     backgroundColor: "#fa000c",
     marginHorizontal: 10,
-    padding: 10
+    padding: 20
   },
   btnText: {
     color: "#fff"
@@ -106,6 +118,7 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   textInput: {
+    backgroundColor:"#fa000c",
     padding: 15,
     margin: 5,
     color: "#fff"
