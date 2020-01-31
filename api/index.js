@@ -56,7 +56,7 @@ export const getLocations = async token => {
   try {
     instance.defaults.headers.common["Authorization"] = `Baerer ${token}`;
 
-    const res = await instance.get("/locations");
+    const res = await instance.post("/locations", {skip:0, limit: 10000});
 
     if (res) {
       return res.data;

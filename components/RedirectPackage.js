@@ -72,7 +72,7 @@ const RedirectPackage = ({ navigation }) => {
           status: "передано в доставку"
         };
 
-        navigation.navigate("RedirectPackage", { data, token });
+        navigation.navigate("DriverDetails", { data, token });
       } else {
         setErr(true);
       }
