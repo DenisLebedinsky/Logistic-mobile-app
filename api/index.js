@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://kuhenland-test.herokuapp.com" //"http://194.246.80.173:3000"
+  baseURL: "http://194.246.80.173:3000"
 });
 
 export const signIn = async data => {

@@ -15,14 +15,14 @@ const TakePackageFinal = ({ navigation }) => {
       const token = await AsyncStorage.getItem("TOKEN");
 
       if (user.id && user.locationId && packageItem._id) {
-        const status = user.locationId !== item.reciverId._id ? 'Принято на транзитном складе': 'доставлено';
+        const status = user.locationId !== item.resiverId._id ? 'Принято на транзитном складе': 'доставлено';
  
         const data = {
           _id: packageItem._id,
           status,
           recipientId: user.id,
-          factreciverId: user.locationId,
-          reciveData: Date.now(),
+          factresiverId: user.locationId,
+          resiveData: Date.now(),
           comment: comment
         };
 

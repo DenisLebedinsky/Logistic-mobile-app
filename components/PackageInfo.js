@@ -54,7 +54,7 @@ const PackageInfo = ({ navigation }) => {
   };
 
   const take = () => {
-    if (user.locationId !== item.reciverId._id) {
+    if (user.locationId !== item.resiverId._id) {
       navigation.navigate("TakePackage", { item, transit: true });
     }
     navigation.navigate("TakePackage", { item });
@@ -113,7 +113,7 @@ const PackageInfo = ({ navigation }) => {
         </View>
         <View>
           <TouchableOpacity onPress={take}>
-            {user.locationId !== item.reciverId._id ?
+            {user.locationId !== item.resiverId._id ?
               (<View style={styles.btn}>
                 <Text style={styles.btnText}>
                   Принять на транзитный склад
@@ -146,7 +146,7 @@ const PackageInfo = ({ navigation }) => {
               <View style={styles.info}>
                 <Text style={styles.textheader}>Получатель:</Text>
                 <Text style={styles.text}>
-                  {item.reciverId && item.reciverId.title}
+                  {item.resiverId && item.resiverId.title}
                 </Text>
               </View>
 

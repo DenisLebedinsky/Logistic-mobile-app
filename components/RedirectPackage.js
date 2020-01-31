@@ -55,8 +55,8 @@ const RedirectPackage = ({ navigation }) => {
 
       if (
         !(
-          item.reciverId._id === selectLoc ||
-          item.reciverId.title.toLowerCase() === selectLoc.toLowerCase()
+          item.resiverId._id === selectLoc ||
+          item.resiverId.title.toLowerCase() === selectLoc.toLowerCase()
         )
       ) {
         item.transit.push({
@@ -68,7 +68,7 @@ const RedirectPackage = ({ navigation }) => {
         const data = {
           _id: item._id,
           transit: item.transit,
-          test: item.reciverId,
+          test: item.resiverId,
           status: "передано в доставку"
         };
 
@@ -96,7 +96,7 @@ const RedirectPackage = ({ navigation }) => {
             <View style={styles.colorBlock}>
               <Text style={styles.headTitle}>Конечный получатель:</Text>
               <Text style={(styles.textCenter, styles.textWihte)}>
-                {item.reciverId && item.reciverId.title}
+                {item.resiverId && item.resiverId.title}
               </Text>
             </View>
             <Text style={styles.textCenter}>
