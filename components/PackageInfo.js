@@ -5,7 +5,6 @@ import {
   View,
   Image,
   AsyncStorage,
-  TouchableOpacity,
   ActivityIndicator,
   ImageBackground,
   ScrollView,
@@ -14,11 +13,14 @@ import {
 import { getPackageById, updatePackage } from "../api";
 import { Ionicons } from "@expo/vector-icons";
 import moment from "moment";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
+import Toast from './helpers/Toast';
 
 const PackageInfo = ({ navigation }) => {
   const id = navigation.getParam("id");
   const [item, setItem] = useState(null);
   const [err, setErr] = useState(false);
+  const [errMsg, setErrMsg] = useState('')
   const [isOpenItems, setIsOpenItems] = useState(false);
   const [isOpenTransit, setIsOpenTransit] = useState(false);
 
@@ -36,7 +38,7 @@ const PackageInfo = ({ navigation }) => {
         setItem({ ...res, token });
       }
     } catch (error) {
-      console.log(error);
+      setErrMsg(error);
     }
   };
 
@@ -51,16 +53,16 @@ const PackageInfo = ({ navigation }) => {
   const send = async () => {
     const user = JSON.parse(await AsyncStorage.getItem("USER"));
 
-    console.log(user)
-    
     const data = {
       _id: id,
       sendData: Date.now(),
       sendUserId: user.id,
       status: "inProcess"
     };
-    const res = updatePackage(data, item.token);
-    if (res === "error") {
+
+    const res = await updatePackage(data, item.token);
+
+    if (res.error) {
       setErr(true);
     } else {
       setErr(false);
@@ -78,11 +80,11 @@ const PackageInfo = ({ navigation }) => {
 
   const getSendBtn = () => {
     return (
-      <TouchableOpacity onPress={send}>
+      <DebounceTouchbleOpacity onPress={send}>
         <View style={styles.btn}>
           <Text style={styles.btnText}>Отправить</Text>
         </View>
-      </TouchableOpacity>
+      </DebounceTouchbleOpacity>
     );
   };
 
@@ -97,22 +99,22 @@ const PackageInfo = ({ navigation }) => {
     return (
       <View style={styles.btnBlock}>
         <View>
-          <TouchableOpacity onPress={transmit}>
+          <DebounceTouchbleOpacity onPress={transmit}>
             <View style={styles.btn}>
               <Text style={styles.btnText}>Переслать</Text>
             </View>
-          </TouchableOpacity>
+          </DebounceTouchbleOpacity>
         </View>
         <View>
-          <TouchableOpacity onPress={take}>
+          <DebounceTouchbleOpacity onPress={take}>
             <View style={styles.btn}>
               <Text style={styles.btnText}>
-                {item.transit.length > 0
+                {item.transit && item.transit.length > 0
                   ? "Принять и закончить маршрут"
                   : "Принять"}
               </Text>
             </View>
-          </TouchableOpacity>
+          </DebounceTouchbleOpacity>
         </View>
       </View>
     );
@@ -136,7 +138,7 @@ const PackageInfo = ({ navigation }) => {
               </View>
 
               <View style={styles.listBlock}>
-                <TouchableOpacity onPress={toggleItemList}>
+                <DebounceTouchbleOpacity onPress={toggleItemList}>
                   <View style={styles.listbtn}>
                     <Text style={styles.btnText}>
                       {isOpenItems
@@ -145,7 +147,7 @@ const PackageInfo = ({ navigation }) => {
                     </Text>
                     <Ionicons name="md-list" size={32} color="#fff" />
                   </View>
-                </TouchableOpacity>
+                </DebounceTouchbleOpacity>
 
                 {isOpenItems && (
                   <View>
@@ -170,7 +172,7 @@ const PackageInfo = ({ navigation }) => {
               </View>
 
               <View style={styles.listBlock}>
-                <TouchableOpacity onPress={toggleTransitList}>
+                <DebounceTouchbleOpacity onPress={toggleTransitList}>
                   <View style={styles.listbtn}>
                     <Text style={styles.btnText}>
                       {isOpenTransit
@@ -179,7 +181,7 @@ const PackageInfo = ({ navigation }) => {
                     </Text>
                     <Ionicons name="md-list" size={32} color="#fff" />
                   </View>
-                </TouchableOpacity>
+                </DebounceTouchbleOpacity>
 
                 {isOpenTransit && item.transit.length > 0 && (
                   <View>
@@ -224,6 +226,7 @@ const PackageInfo = ({ navigation }) => {
           </View>
         )}
       </View>
+      <Toast visible={errMsg !== ''} message={errMsg} />
     </ImageBackground>
   );
 };

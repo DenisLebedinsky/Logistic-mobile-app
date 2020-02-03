@@ -7,11 +7,13 @@ import {
   AsyncStorage,
   TouchableOpacity,
   ActivityIndicator,
-  ImageBackground
+  ImageBackground,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Auth from "./Auth";
 import { signIn } from "../api";
+import Toast from './helpers/Toast';
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 export default function Home({ navigation }) {
   const [auth, setAuth] = useState({
@@ -21,6 +23,7 @@ export default function Home({ navigation }) {
     user: { username: "", id: "" }
   });
   const [err, setErr] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
     if (auth.isLoading && !auth.isLogin) {
@@ -31,7 +34,8 @@ export default function Home({ navigation }) {
   const signInMethod = async data => {
     const res = await signIn(data);
 
-    if (res !== "error") {
+    if (!res.error) {
+      
       setAuth({
         isLogin: true,
         isLoading: false,
@@ -48,6 +52,7 @@ export default function Home({ navigation }) {
       });
     } else {
       setErr(true);
+      setErrMsg(res.msg)
     }
   };
 
@@ -69,13 +74,14 @@ export default function Home({ navigation }) {
     try {
       const token = await AsyncStorage.getItem("TOKEN");
       const user = JSON.parse(await AsyncStorage.getItem("USER"));
+     
       if (token && user) {
         setAuth({ ...auth, token, isLoading: false, user, isLogin: true });
       } else {
         setAuth({ ...auth, isLoading: false });
       }
     } catch (error) {
-      console.log(error);
+      setErrMsg(error)
     }
   };
 
@@ -84,7 +90,7 @@ export default function Home({ navigation }) {
       await AsyncStorage.setItem("TOKEN", token);
       await AsyncStorage.setItem("USER", JSON.stringify(user));
     } catch (error) {
-      console.log(error);
+      setErrMsg(error)
     }
   };
 
@@ -93,7 +99,7 @@ export default function Home({ navigation }) {
       await AsyncStorage.removeItem("TOKEN");
       await AsyncStorage.removeItem("USER");
     } catch (error) {
-      console.log(error);
+      setErrMsg(error)
     }
   };
 
@@ -111,22 +117,22 @@ export default function Home({ navigation }) {
           <View style={styles.profileContainer}>
             <View style={styles.profile}>
               <Text style={styles.profileText}>{auth.user.username}</Text>
-              <TouchableOpacity onPress={logout}>
+              <DebounceTouchbleOpacity onPress={logout} delay={1000}>
                 <Ionicons
                   name="md-log-out"
                   size={32}
                   color="#fff"
                 />
-              </TouchableOpacity>
+              </DebounceTouchbleOpacity>
             </View>
-            <TouchableOpacity onPress={openScaner}>
+            <DebounceTouchbleOpacity onPress={openScaner} delay={1000}>
               <View style={styles.contentCenter}>
                 <Image
                   style={styles.stretch}
                   source={require("../assets/scan.jpg")}
                 />
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
         ) : (
           <View style={styles.contentCenter}>
@@ -134,6 +140,8 @@ export default function Home({ navigation }) {
           </View>
         )}
       </View>
+      <Toast visible={errMsg !== ''} message={errMsg} />
+       
     </ImageBackground>
   );
 }

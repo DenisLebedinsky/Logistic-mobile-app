@@ -1,6 +1,7 @@
 import React from "react";
 
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 export default function ShowStatus({ navigation }) {
   const retunToHome = () => {
@@ -13,11 +14,11 @@ export default function ShowStatus({ navigation }) {
         <Text style={styles.textMSG}>Успешно отправлено!</Text>
       </View>
       <View>
-        <TouchableOpacity onPress={retunToHome}>
+        <DebounceTouchbleOpacity onPress={retunToHome}>
           <View style={styles.btn}>
             <Text style={styles.btnText}>Вернуться на главный экран</Text>
           </View>
-        </TouchableOpacity>
+        </DebounceTouchbleOpacity>
       </View>
     </View>
   );

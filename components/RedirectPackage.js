@@ -10,6 +10,8 @@ import {
   ImageBackground
 } from "react-native";
 import { getLocations, updatePackage } from "../api";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
+import Toast from './helpers/Toast';
 
 const RedirectPackage = ({ navigation }) => {
   const item = navigation.getParam("item");
@@ -17,6 +19,8 @@ const RedirectPackage = ({ navigation }) => {
   const [locations, setLocations] = useState(null);
   const [selectLoc, setSelectLoc] = useState("");
   const [err, setErr] = useState(false);
+  const [errMsg, setErrMsg] = useState('')
+
 
   useEffect(() => {
     if (!locations) {
@@ -28,8 +32,10 @@ const RedirectPackage = ({ navigation }) => {
     const token = await AsyncStorage.getItem("TOKEN");
     const res = await getLocations(token);
 
-    if (res !== "error") {
+    if (!res.error) {
       setLocations(res);
+    } else {
+      setErrMsg(res.msg)
     }
   };
 
@@ -68,12 +74,13 @@ const RedirectPackage = ({ navigation }) => {
         const data = {
           _id: item._id,
           transit: item.transit,
-          test:item.resiverId
+          test: item.resiverId
         };
 
         const res = await updatePackage(data, token);
 
-        if (res === "error") {
+        if (res.error) {
+          setErrMsg(res.msg)
           setErr(true);
         } else {
           navigation.navigate("ShowStatus");
@@ -82,7 +89,7 @@ const RedirectPackage = ({ navigation }) => {
         setErr(true);
       }
     } catch (error) {
-      console.log(error);
+      setErrMsg(error);
     }
   };
 
@@ -107,27 +114,29 @@ const RedirectPackage = ({ navigation }) => {
             <Text style={styles.textCenter}>
               Выберите нового получателя из списка
             </Text>
-            <View style={(styles.pickerBlock, styles.colorBlock)}>
-              <Picker
-                selectedValue={selectLoc}
-                style={(styles.picker, styles.textWihte)}
-                onValueChange={loc => handleChange(loc)}
-              >
-                {locations &&
-                  locations.map(loc => (
-                    <Picker.Item
-                      label={loc.title}
-                      value={loc.title}
-                      key={loc._id}
-                    />
-                  ))}
-              </Picker>
-            </View>
+            {locations &&
+              <View style={(styles.pickerBlock, styles.colorBlock)}>
+                <Picker
+                  selectedValue={selectLoc}
+                  style={(styles.picker, styles.textWihte)}
+                  onValueChange={loc => handleChange(loc)}
+                >
+                  {locations.length &&
+                    locations.map(loc => (
+                      <Picker.Item
+                        label={loc.title}
+                        value={loc.title}
+                        key={loc._id}
+                      />
+                    ))}
+                </Picker>
+              </View>
+            }
             <Text style={styles.textCenter}>или введите вручную</Text>
             <TextInput
               style={
                 (styles.textInput,
-                { ...styles.colorBlock, ...styles.textWihte })
+                  { ...styles.colorBlock, ...styles.textWihte })
               }
               onChangeText={loc => setSelectLoc(loc)}
               value={selectLoc}
@@ -144,22 +153,23 @@ const RedirectPackage = ({ navigation }) => {
           )}
           <View style={styles.btnBlock}>
             <View>
-              <TouchableOpacity onPress={cancel}>
+              <DebounceTouchbleOpacity onPress={cancel} delay={1000}>
                 <View style={styles.btn}>
                   <Text style={styles.btnText}>Отменить</Text>
                 </View>
-              </TouchableOpacity>
+              </DebounceTouchbleOpacity>
             </View>
             <View>
-              <TouchableOpacity onPress={take}>
+              <DebounceTouchbleOpacity onPress={take} delay={1000}>
                 <View style={styles.btn}>
                   <Text style={styles.btnText}>Отправить</Text>
                 </View>
-              </TouchableOpacity>
+              </DebounceTouchbleOpacity>
             </View>
           </View>
         </View>
-      </View>
+        <Toast visible={errMsg !== ''} message={errMsg} />
+      </View>      
     </ImageBackground>
   );
 };

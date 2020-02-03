@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, ScrollView, FlatList } from "react-native";
-
-import { TouchableOpacity } from "react-native-gesture-handler";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 const TakePackage = ({ navigation }) => {
   const packageItem = navigation.getParam("item");
@@ -40,18 +39,18 @@ const TakePackage = ({ navigation }) => {
       <View style={styles.contentCenter}>
         <View style={styles.btnBlock}>
           <View>
-            <TouchableOpacity onPress={cancel}>
+            <DebounceTouchbleOpacity onPress={cancel}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Отменить</Text>
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
           <View>
-            <TouchableOpacity onPress={take}>
+            <DebounceTouchbleOpacity onPress={take}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Принять</Text>
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
         </View>
       </View>

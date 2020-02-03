@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, TextInput, AsyncStorage } from "react-native";
 import { updatePackage } from "../api";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import Toast from './helpers/Toast';
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 const TakePackageFinal = ({ navigation }) => {
   const [comment, setComment] = useState("");
   const packageItem = navigation.getParam("item");
 
   const [err, ssetErr] = useState(false);
+  const [errMsg, setErrMsg ] = useState('')
 
   const take = async () => {
     try {
@@ -25,16 +27,19 @@ const TakePackageFinal = ({ navigation }) => {
         };
 
         const res = await updatePackage(data, token);
-        if (res === "error") {
+       
+        if (res.error) {
           ssetErr(true);
+          setErrMsg(res.msg)
         } else {
           navigation.navigate("ShowStatus");
         }
+
       } else {
         ssetErr(true);
       }
     } catch (error) {
-      console.log(error);
+      setErrMsg(error);
     }
   };
 
@@ -66,21 +71,22 @@ const TakePackageFinal = ({ navigation }) => {
         )}
         <View style={styles.btnBlock}>
           <View>
-            <TouchableOpacity onPress={cancel}>
+            <DebounceTouchbleOpacity onPress={cancel}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Отменить</Text>
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
           <View>
-            <TouchableOpacity onPress={take}>
+            <DebounceTouchbleOpacity onPress={take}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Готово</Text>
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
         </View>
       </View>
+      <Toast visible={errMsg !== ''} message={errMsg} />
     </View>
   );
 };

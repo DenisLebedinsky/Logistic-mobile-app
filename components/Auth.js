@@ -5,9 +5,9 @@ import {
   TextInput,
   View,
   KeyboardAvoidingView,
-  TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 const Auth = ({ signIn, err, setErr, isLoading }) => {
   const [login, setLogin] = useState("");
@@ -70,12 +70,12 @@ const Auth = ({ signIn, err, setErr, isLoading }) => {
           )}
 
           <View style={styles.btnBlock}>
-            <TouchableOpacity onPress={autorize}>
+            <DebounceTouchbleOpacity onPress={autorize} delay={1000}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Войти</Text>
                 <Ionicons name="md-log-in" size={32} color="#fff" />
               </View>
-            </TouchableOpacity>
+            </DebounceTouchbleOpacity>
           </View>
         </View>
       )}
