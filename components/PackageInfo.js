@@ -1,78 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
   View,
   Image,
   AsyncStorage,
-  TouchableOpacity,
   ActivityIndicator,
   ImageBackground,
   ScrollView,
   FlatList
 } from "react-native";
-import { getPackageById, updatePackage } from "../api";
 import { Ionicons } from "@expo/vector-icons";
 import moment from "moment";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
+import { authSelector } from '../redux/reducers/auth'
+import { packageSelector, errorSelector, loadingSelector, changeUpdateItem, setUpdateItem } from '../redux/reducers/packages';
+import { Container, Content } from "native-base";
 
 const PackageInfo = ({ navigation }) => {
-  const id = navigation.getParam("id");
-  const [item, setItem] = useState(null);
-  const [err, setErr] = useState(false);
   const [isOpenItems, setIsOpenItems] = useState(false);
   const [isOpenTransit, setIsOpenTransit] = useState(false);
-  const [user, setUser] = useState();
-  const [token, setToken] = useState('')
 
-  useEffect(() => {
-    if (!item && user) {
-      getPackage();
-    }
-  });
+  const dispatch = useDispatch();
+  const item = useSelector(packageSelector);
+  const auth = useSelector(authSelector)
+  const error = useSelector(errorSelector);
+  const loading = useSelector(loadingSelector)
+  const finalWerehouse = auth.user.locationId === item?.resiverId?._id;
 
-  useEffect(() => {
-    if (!user) {
-      getusrFromStore();
-    }
-  }, [user])
 
-  const getusrFromStore = async () => {
-    setUser(JSON.parse(await AsyncStorage.getItem("USER")))
-  }
-
-  const getPackage = async () => {
-    try {
-      const token = await AsyncStorage.getItem("TOKEN");
-      setToken(token);
-      const res = await getPackageById(id, token);
-      if (res !== "error") {
-        setItem({ ...res, token });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const take = () => {
-    if (user.locationId !== item.resiverId._id) {
-      navigation.navigate("TakePackage", { item, transit: true });
-    }
-    navigation.navigate("TakePackage", { item });
+  const onAccept = () => {
+    navigation.push("AcceptPackage");
   };
 
   const transmit = () => {
-    navigation.navigate("RedirectPackage", { item });
+    navigation.push("RedirectPackage");
   };
 
-  const send = async () => {
+  const send = () => {
     const data = {
-      _id: id,
+      _id: item._id,
       sendData: Date.now(),
-      sendUserId: user.id,
+      sendUserId: auth?.user?.id || '',
       status: "передано в доставку"
     };
 
-    navigation.navigate("DriverDetails", { data, token });
+    dispatch(changeUpdateItem(data))
+    navigation.push("DriverDetails");
   };
 
   const toggleItemList = () => {
@@ -83,18 +58,34 @@ const PackageInfo = ({ navigation }) => {
     setIsOpenTransit(!isOpenTransit);
   };
 
-  const getSendBtn = () => {
-    return (
-      <TouchableOpacity onPress={send}>
-        <View style={styles.btn}>
-          <Text style={styles.btnText}>Отправить</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderLoadError = () => <View>
+    <Text style={styles.err}>
+      {`Ошибка загрузки данных об отправлении,
+       повторите попытку`}
+    </Text>
+    <DebounceTouchbleOpacity onPress={() => navigation.pop(1)} delay={1000}>
+      <View style={styles.btn}>
+        <Text style={styles.btnText}>Вернуться к сканированию</Text>
+      </View>
+    </DebounceTouchbleOpacity>
+  </View>
 
-  const getSelectBtn = status => {
-    if (status === "accepted") {
+  const renderInventoryEmpty = () => <View>
+    <Text style={styles.err}>
+      {`Список предметов пуст`}
+    </Text>
+  </View>
+
+  const renderTransitEmpty = () => (<View>
+    <Text style={styles.err}>
+      {`Транзитные пункты не добавлены`}
+    </Text>
+  </View>)
+
+  const renderButton = () => {
+    console.log(item)
+
+    if (item.status === "accepted" || item.status === "доставлено") {
       return (
         <View>
           <Text style={styles.err}>Комплект уже принят!</Text>
@@ -102,145 +93,192 @@ const PackageInfo = ({ navigation }) => {
       );
     }
 
+    if (item.status === "notSent" || item.status === "не отправлено") {
+      return (
+        <DebounceTouchbleOpacity onPress={send}>
+          <View style={styles.btn}>
+            <Text style={styles.btnText}>Отправить</Text>
+          </View>
+        </DebounceTouchbleOpacity>
+      );
+    }
+
+
     return (
       <View style={styles.btnBlock}>
         <View>
-          <TouchableOpacity onPress={transmit}>
-            <View style={styles.btn}>
-              <Text style={styles.btnText}>Переслать</Text>
-            </View>
-          </TouchableOpacity>
+          {!finalWerehouse &&
+            <DebounceTouchbleOpacity onPress={transmit}>
+              <View style={styles.btn}>
+                <Text style={styles.btnText}>Переслать</Text>
+              </View>
+            </DebounceTouchbleOpacity>
+          }
         </View>
         <View>
-          <TouchableOpacity onPress={take}>
-            {user.locationId !== item.resiverId._id ?
-              (<View style={styles.btn}>
+
+          <DebounceTouchbleOpacity onPress={onAccept}>
+            {!finalWerehouse ? (
+              <View style={styles.btn}>
                 <Text style={styles.btnText}>
                   Принять на транзитный склад
-              </Text>
-              </View>)
-              :
-              (<View style={styles.btn}>
-                <Text style={styles.btnText}>
-                  {item.transit.length > 0
-                    ? "Принять и закончить маршрут"
-                    : "Принять"}
-                </Text>
-              </View>)}
-          </TouchableOpacity>
+                  </Text>
+              </View>
+            ) : (
+                <View style={styles.btn}>
+                  <Text style={styles.btnText}>
+                    Принять и закончить маршрут
+                  </Text>
+                </View>
+              )}
+          </DebounceTouchbleOpacity>
+
         </View>
       </View>
     );
   };
 
-  return (
-    <ImageBackground
-      source={require("../assets/bg4.png")}
-      style={{ width: "100%", height: "100%" }}
-    >
-      <View style={styles.container}>
-        {!item && <ActivityIndicator size="large" color="#fa000c" />}
-        {item && (
-          <View>
-            <View style={styles.contentInfo}>
-              <View style={styles.info}>
-                <Text style={styles.textheader}>Получатель:</Text>
-                <Text style={styles.text}>
-                  {item.resiverId && item.resiverId.title}
-                </Text>
-              </View>
+  const renderInventory = () => <View>
+    <DebounceTouchbleOpacity onPress={toggleItemList}>
+      <View style={styles.listbtn}>
+        <Text style={styles.btnText}>
+          {isOpenItems
+            ? "Cкрыть список предметов"
+            : "Показать список предметов"}
+        </Text>
+        <Ionicons name="md-list" size={32} color="#fff" />
+      </View>
+    </DebounceTouchbleOpacity>
 
-              <View style={styles.listBlock}>
-                <TouchableOpacity onPress={toggleItemList}>
-                  <View style={styles.listbtn}>
-                    <Text style={styles.btnText}>
-                      {isOpenItems
-                        ? "Cкрыть список предметов"
-                        : "Показать список предметов"}
-                    </Text>
-                    <Ionicons name="md-list" size={32} color="#fff" />
-                  </View>
-                </TouchableOpacity>
-
-                {isOpenItems && (
-                  <View>
-                    <ScrollView>
-                      <FlatList
-                        data={item.inventory}
-                        renderItem={({ item }) => (
-                          <View style={styles.list}>
-                            <View style={styles.titleItem}>
-                              <Text style={styles.listText}>{item.title}</Text>
-                            </View>
-                            <View style={styles.countItem}>
-                              <Text style={styles.listText}>{item.count}</Text>
-                            </View>
-                          </View>
-                        )}
-                        keyExtractor={item => item._id.toString()}
-                      ></FlatList>
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.listBlock}>
-                <TouchableOpacity onPress={toggleTransitList}>
-                  <View style={styles.listbtn}>
-                    <Text style={styles.btnText}>
-                      {isOpenTransit
-                        ? "Cкрыть транзитные пункты"
-                        : "Показать транзитные пункты"}
-                    </Text>
-                    <Ionicons name="md-list" size={32} color="#fff" />
-                  </View>
-                </TouchableOpacity>
-
-                {isOpenTransit && item.transit.length > 0 && (
-                  <View>
-                    <ScrollView>
-                      <FlatList
-                        data={item.transit}
-                        renderItem={({ item }) => (
-                          <View style={styles.list}>
-                            <View style={styles.titleItemT}>
-                              <Text style={styles.listText}>
-                                {item.sendLocId && item.sendLocId.title}
-                              </Text>
-                            </View>
-                            <View style={styles.countItemT}>
-                              <Text style={styles.listText}>
-                                {item.date &&
-                                  moment(item.date).format("DD.MM.YYYY hh:mm")}
-                              </Text>
-                            </View>
-                          </View>
-                        )}
-                        keyExtractor={item => "transit_" + item._id}
-                      ></FlatList>
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {err && (
-              <View>
-                <Text style={styles.err}>
-                  Ошибка обновления статуса, повторите попытку
-                </Text>
+    {isOpenItems && (
+      <View>
+        <ScrollView>
+          <FlatList
+            data={item.inventory}
+            renderItem={({ item }) => (
+              <View style={styles.list}>
+                <View style={styles.titleItem}>
+                  <Text style={styles.listText}>{item.title}</Text>
+                </View>
+                <View style={styles.countItem}>
+                  <Text style={styles.listText}>{item.count}</Text>
+                </View>
               </View>
             )}
-            <View style={styles.contentCenter}>
-              {item && item.status !== "notSent"
-                ? getSelectBtn(item.status)
-                : getSendBtn()}
+            keyExtractor={item => item._id.toString()}
+          ></FlatList>
+        </ScrollView>
+      </View>
+    )}
+  </View>
+
+
+
+  const renderTransit = () => <View>
+    <DebounceTouchbleOpacity onPress={toggleTransitList}>
+      <View style={styles.listbtn}>
+        <Text style={styles.btnText}>
+          {isOpenTransit
+            ? "Cкрыть транзитные пункты"
+            : "Показать транзитные пункты"}
+        </Text>
+        <Ionicons name="md-list" size={32} color="#fff" />
+      </View>
+    </DebounceTouchbleOpacity>
+
+    {isOpenTransit && item.transit?.length > 0 && (
+      <View>
+        <ScrollView>
+          <FlatList
+            data={item.transit}
+            renderItem={({ item }) => (
+              <View style={styles.list}>
+                <View style={styles.titleItemT}>
+                  <Text style={styles.listText}>
+                    {item.sendLocId && item.sendLocId.title}
+                  </Text>
+                </View>
+                <View style={styles.countItemT}>
+                  <Text style={styles.listText}>
+                    {item.date &&
+                      moment(item.date).format("DD.MM.YYYY hh:mm")}
+                  </Text>
+                </View>
+              </View>
+            )}
+            keyExtractor={item => "transit_" + item._id}
+          ></FlatList>
+        </ScrollView>
+      </View>
+    )}
+
+  </View>
+
+
+  if (error) {
+    return <Container style={{ justifyContent: 'center' }}>
+      {error && <View>
+        <Text style={styles.err}>
+          {`При загрузки данных возникла ошибка,
+        проверте интернет соединение 
+        и повторите попытку`}
+        </Text>
+      </View>}
+    </Container>
+  }
+
+  return (
+    <Container style={{ justifyContent: 'center' }}>
+
+      {loading && <ActivityIndicator size="large" color="#fa000c" />}
+
+      {!loading && !item && renderLoadError()}
+
+      {!loading && item &&
+        // <View style={styles.contentInfo}>
+        <Content style={styles.contentInfo}>
+          <View style={styles.info}>
+
+            <Text style={styles.textheader}>Получатель:</Text>
+            <Text style={styles.text}>
+              {item.resiverId && item.resiverId.title}
+            </Text>
+
+            <Text style={styles.textheader}>Примечание:</Text>
+            <Text style={styles.text}>
+              {item.note}
+            </Text>
+
+          </View>
+
+          <View style={styles.listBlock}>
+            {item.inventory?.length ? renderInventory() : renderInventoryEmpty()}
+          </View>
+
+          <View style={styles.listBlock}>
+            {item.transit?.length ? renderTransit() : renderTransitEmpty()}
+          </View>
+
+          <View style={styles.listBlock}>
+            <View style={styles.driverDetails}>
+              <Text style={styles.textheader}>Транспортные данные:</Text>
+              <Text style={styles.text}>
+                {`ФИО ${item.driverDetails.driverFullname}`}
+              </Text>
+              <Text style={styles.text}>
+                {`№ ${item.driverDetails.regNumber}`}
+              </Text>
             </View>
           </View>
-        )}
+
+        </Content>
+      }
+      <View style={styles.contentCenter}>
+        {!loading && item && renderButton()}
       </View>
-    </ImageBackground>
-  );
+
+    </Container>
+  )
 };
 
 const styles = StyleSheet.create({
@@ -257,7 +295,9 @@ const styles = StyleSheet.create({
   },
   contentInfo: {
     flex: 1,
-    marginTop: 30
+    marginTop: 30,
+    marginBottom: 15,
+    paddingHorizontal: 20
   },
   info: {
     backgroundColor: "#fa000c",
@@ -268,17 +308,22 @@ const styles = StyleSheet.create({
     height: 200
   },
   text: {
-    textAlign: "center",
-    color: "#fff"
+    // textAlign: "center",
+    color: "#000",
+    fontFamily: 'Roboto',
+    fontSize: 17,
+    fontWeight: '700'
   },
   textheader: {
-    textAlign: "center",
+    // textAlign: "center",
     color: "#fff",
-    fontWeight: "800"
+    fontWeight: "800",
+    fontFamily: 'Roboto',
+    fontSize: 17
   },
   listBlock: {
     flex: 1,
-    textAlign: "center",
+    // textAlign: "center",
     marginTop: 30,
     minWidth: 300
   },
@@ -305,17 +350,23 @@ const styles = StyleSheet.create({
     width: "40%"
   },
   listText: {
-    color: "#fff"
+    color: "#000",
+    fontFamily: 'Roboto',
+    fontSize: 17
   },
   listbtn: {
     display: "flex",
     flexDirection: "row",
     backgroundColor: "#fa000c",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10
+    paddingVertical: 10,
+    paddingRight: 30,
+    paddingLeft: 10
   },
   btn: {
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: "#fa000c",
     padding: 10,
     borderWidth: 1,
@@ -323,7 +374,9 @@ const styles = StyleSheet.create({
     margin: 10
   },
   btnText: {
-    color: "#fff"
+    color: "#fff",
+    fontFamily: 'Roboto',
+    fontSize: 16
   },
   btnBlock: {
     display: "flex",
@@ -334,8 +387,18 @@ const styles = StyleSheet.create({
   },
   err: {
     color: "red",
-    textAlign: "center"
-  }
+    textAlign: "center",
+    fontFamily: 'Roboto',
+    fontSize: 16,
+    marginVertical: 20
+  },
+  driverDetails: {
+    alignItems: 'flex-start',
+    paddingLeft: 10,
+    paddingVertical: 10,
+    backgroundColor: "#fa000c"
+  },
+
 });
 
 export default PackageInfo;

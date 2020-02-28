@@ -8,34 +8,64 @@ import {
   TouchableOpacity,
   Button
 } from "react-native";
-import { getPackageById, updatePackage } from "../api";
-import { Ionicons } from "@expo/vector-icons";
-import moment from "moment";
+import { Container } from 'native-base';
+import { useDispatch, useSelector } from "react-redux";
+import { packageSelector, updateDriverDetails, errorUpdateSelector } from '../redux/reducers/packages'
 
 const DriverDetails = ({ navigation }) => {
-  const data = navigation.getParam("data");
-  const token = navigation.getParam("token");
+  const dispatch = useDispatch();
+  const item = useSelector(packageSelector);
+  const updateError = useSelector(errorUpdateSelector)
+  const [driverName, serDrivername] = useState(item.driverDetails.driverFullname || '')
+  const [regNumber, serregNumber] = useState(item.driverDetails.regNumber || '')
 
-  const [driverName, serDrivername] = useState('')
-  const [regNumber, serregNumber] = useState('')
-  const [error, setError] = useState(false);
-  
-  const update = async () => {
-    
-    data.note = {
-      regNumber: regNumber,
-      driverFullname: driverName,
+
+  const update = () => {
+    let value = {
+      driverDetails: {
+        regNumber: item.driverDetails.regNumber,
+        driverFullname: item.driverDetails.driverFullname
+      }
     };
 
-    const res = await updatePackage(data, token);
+    if (regNumber !== item.driverDetails.regNumber || driverName !== item.driverDetails.driverFullname) {
 
-
-    if (res === "error") {
-      setError(true)
-    } else {
-      navigation.navigate("ShowStatus");
+      value.driverDetails = {
+        driverFullname: driverName,
+        regNumber
+      }
     }
+
+    dispatch(updateDriverDetails(value, navigation))
   }
+
+
+  const renderError = () => <View>
+    <Text style={styles.err}>
+      Ошибка обновления, повторите попытку
+   </Text>
+  </View>
+
+  const renderContent = () => <View>
+    <View style={styles.textBlock}>
+
+      <Text style={styles.text}>ФИО водителя</Text>
+      <TextInput
+        style={styles.textInput}
+        onChangeText={text => serDrivername(text)}
+        value={driverName}
+      />
+    </View>
+
+    <View style={styles.textBlock}>
+      <Text style={styles.text}>Рег. номер автомобиля</Text>
+      <TextInput
+        style={styles.textInput}
+        onChangeText={text => serregNumber(text)}
+        value={regNumber}
+      />
+    </View>
+  </View>
 
   return (
     <ImageBackground
@@ -43,43 +73,16 @@ const DriverDetails = ({ navigation }) => {
       style={{ width: "100%", height: "100%" }}
     >
       <View style={styles.container}>
-        {error ? (
-          <View>
-            <Text style={styles.err}>
-              Ошибка обновления, повторите попытку
-              </Text>
-
-
-          </View>) : (
-            <View>
-              <View style={styles.textBlock}>
-
-                <Text style={styles.text}>ФИО водителя</Text>
-                <TextInput
-                  style={styles.textInput}
-                  onChangeText={text => serDrivername(text)}
-                  value={driverName}
-                />
-              </View>
-
-              <View style={styles.textBlock}>
-                <Text style={styles.text}>Рег. номер автомобиля</Text>
-                <TextInput
-                  style={styles.textInput}
-                  onChangeText={text => serregNumber(text)}
-                  value={regNumber}
-                />
-              </View>
-            </View>)}
+        {updateError ? renderError() : renderContent()}
 
         <TouchableOpacity onPress={update}>
-              <View style={styles.btn}>
-                <Text style={styles.btnText}>Отправить</Text>
-              </View>
-            </TouchableOpacity>
-      </View>
+          <View style={styles.btn}>
+            <Text style={styles.btnText}>Отправить</Text>
+          </View>
+        </TouchableOpacity>
+      </View >
 
-    </ImageBackground>
+    </ImageBackground >
   );
 };
 
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
     margin: 50
   },
   contentCenter: {
@@ -101,27 +104,30 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     color: "#000",
     fontWeight: "800",
-    fontSize: 24, 
+    fontSize: 24,
     minWidth: 300
   },
   btn: {
     marginTop: 20,
     backgroundColor: "#fa000c",
     marginHorizontal: 10,
-    padding: 20
+    padding: 10
   },
   btnText: {
-    color: "#fff"
+    color: "#fff",
+
+    fontSize: 16
   },
   err: {
     color: "red",
     textAlign: "center"
   },
   textInput: {
-    backgroundColor:"#fa000c",
+    backgroundColor: "#fa000c",
     padding: 15,
     margin: 5,
-    color: "#fff"
+    color: "#fff",
+    fontSize: 16
   },
   colorBlock: {
     backgroundColor: "#fa000c"

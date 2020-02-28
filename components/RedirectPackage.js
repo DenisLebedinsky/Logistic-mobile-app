@@ -9,76 +9,25 @@ import {
   TouchableOpacity,
   ImageBackground
 } from "react-native";
-import { getLocations, updatePackage } from "../api";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
+import { useDispatch, useSelector } from "react-redux";
+import { locationsSelector, } from '../redux/reducers/locations';
+import { sendFromTransit, packageSelector } from '../redux/reducers/packages'
 
 const RedirectPackage = ({ navigation }) => {
-  const item = navigation.getParam("item");
 
-  const [locations, setLocations] = useState(null);
+  const dispatch = useDispatch();
+  const item = useSelector(packageSelector)
+  const { list, error } = useSelector(locationsSelector);
   const [selectLoc, setSelectLoc] = useState("");
-  const [err, setErr] = useState(false);
-
-  useEffect(() => {
-    if (!locations) {
-      fetchLocations();
-    }
-  });
-
-  fetchLocations = async () => {
-    const token = await AsyncStorage.getItem("TOKEN");
-    const res = await getLocations(token);
-
-    if (res !== "error") {
-      setLocations(res);
-    }
-  };
 
   const handleChange = loc => {
     setSelectLoc(loc);
   };
 
-  const resend = async () => {
-    try {
-      const user = JSON.parse(await AsyncStorage.getItem("USER"));
-      const token = await AsyncStorage.getItem("TOKEN");
-
-      let dateNow = Date.now();
-
-      if (
-        item.transit.length > 0 &&
-        !item.transit[item.transit.length - 1].date
-      ) {
-        item.transit[item.transit.length - 1].date = dateNow;
-        item.transit[item.transit.length - 1].sendfactLocId = user.locationId;
-        item.transit[item.transit.length - 1].userId = user.id;
-      }
-
-      if (
-        !(
-          item.resiverId._id === selectLoc ||
-          item.resiverId.title.toLowerCase() === selectLoc.toLowerCase()
-        )
-      ) {
-        item.transit.push({
-          sendLocId: { title: selectLoc }
-        });
-      }
-
-      if (user.id && selectLoc && item._id) {
-        const data = {
-          _id: item._id,
-          transit: item.transit,
-          test: item.resiverId,
-          status: "передано в доставку"
-        };
-
-        navigation.navigate("DriverDetails", { data, token });
-      } else {
-        setErr(true);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  const resend = () => {
+    dispatch(sendFromTransit(selectLoc))
+    navigation.navigate("DriverDetails");
   };
 
   const cancel = () => {
@@ -86,30 +35,32 @@ const RedirectPackage = ({ navigation }) => {
   };
 
   return (
-    <ImageBackground
-      source={require("../assets/bg4.png")}
-      style={{ width: "100%", height: "100%" }}
-    >
-      <View style={styles.container}>
-        <View style={styles.contentInfo}>
-          <View style={styles.info}>
-            <View style={styles.colorBlock}>
-              <Text style={styles.headTitle}>Конечный получатель:</Text>
-              <Text style={(styles.textCenter, styles.textWihte)}>
-                {item.resiverId && item.resiverId.title}
-              </Text>
-            </View>
-            <Text style={styles.textCenter}>
-              Выберите нового получателя из списка
+
+    <View style={styles.container}>
+      <View style={styles.contentInfo}>
+        <View style={styles.info}>
+        
+          <View style={styles.colorBlock}>
+            <Text style={styles.headTitle}>Конечный получатель:</Text>
+            <Text style={styles.text}>
+              {item.resiverId && item.resiverId.title}
             </Text>
+          </View>
+
+          <Text style={styles.textCenter}>
+            Выберите нового получателя из списка
+            </Text>
+
+          {list &&
             <View style={(styles.pickerBlock, styles.colorBlock)}>
               <Picker
                 selectedValue={selectLoc}
                 style={(styles.picker, styles.textWihte)}
                 onValueChange={loc => handleChange(loc)}
               >
-                {locations &&
-                  locations.map(loc => (
+
+                {list.length &&
+                  list.map(loc => (
                     <Picker.Item
                       label={loc.title}
                       value={loc.title}
@@ -118,44 +69,46 @@ const RedirectPackage = ({ navigation }) => {
                   ))}
               </Picker>
             </View>
-            <Text style={styles.textCenter}>или введите вручную</Text>
+          }
+          {/* <Text style={styles.textCenter}>или введите вручную</Text>
             <TextInput
               style={
                 (styles.textInput,
-                { ...styles.colorBlock, ...styles.textWihte })
+                  { ...styles.colorBlock, ...styles.textWihte })
               }
               onChangeText={loc => setSelectLoc(loc)}
               value={selectLoc}
-            />
-          </View>
+            /> */}
         </View>
-        <View style={styles.contentCenter}>
-          {err && (
-            <View>
-              <Text style={styles.err}>
-                Ошибка обновления, повторите попытку
+      </View>
+      <View style={styles.contentCenter}>
+
+        {error && (
+          <View>
+            <Text style={styles.err}>
+              Ошибка обновления, повторите попытку
               </Text>
-            </View>
-          )}
-          <View style={styles.btnBlock}>
-            <View>
-              <TouchableOpacity onPress={cancel}>
-                <View style={styles.btn}>
-                  <Text style={styles.btnText}>Отменить</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-            <View>
-              <TouchableOpacity onPress={resend}>
-                <View style={styles.btn}>
-                  <Text style={styles.btnText}>Отправить</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+          </View>
+        )}
+
+        <View style={styles.btnBlock}>
+          <View>
+            <DebounceTouchbleOpacity onPress={cancel} delay={1000}>
+              <View style={styles.btn}>
+                <Text style={styles.btnText}>Отменить</Text>
+              </View>
+            </DebounceTouchbleOpacity>
+          </View>
+          <View>
+            <DebounceTouchbleOpacity onPress={resend} delay={1000}>
+              <View style={styles.btn}>
+                <Text style={styles.btnText}>Отправить</Text>
+              </View>
+            </DebounceTouchbleOpacity>
           </View>
         </View>
       </View>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -184,7 +137,8 @@ const styles = StyleSheet.create({
     padding: 10
   },
   btnText: {
-    color: "#fff"
+    color: "#fff",
+    fontSize: 16
   },
   btnBlock: {
     display: "flex",
@@ -194,14 +148,15 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   title: {
-    width: "70%"
+    width: "70%",
+    fontSize: 16
   },
 
   headTitle: {
     fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-    color: "#fff"
+    textAlign: "left",
+    color: "#fff",
+    fontSize: 16
   },
   err: {
     color: "red",
@@ -220,20 +175,30 @@ const styles = StyleSheet.create({
   textInput: {
     padding: 15,
     margin: 5,
-    color: "#fff"
+    color: "#fff",
+    fontSize: 16
   },
   textCenter: {
-    textAlign: "center",
+    textAlign: "left",
     marginVertical: 10,
     color: "#000",
     fontWeight: "800"
   },
   colorBlock: {
-    backgroundColor: "#fa000c"
+    backgroundColor: "#fa000c",
+    padding: 10
   },
   textWihte: {
     color: "#fff",
-    padding: 10
+    fontWeight: "800",
+    fontFamily: 'Roboto',
+    fontSize: 17
+  },
+  text:{
+    color: "#000",
+    fontWeight: "800",
+    fontFamily: 'Roboto',
+    fontSize: 17
   }
 });
 

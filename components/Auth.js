@@ -1,87 +1,106 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   View,
+  ImageBackground,
   KeyboardAvoidingView,
-  TouchableOpacity
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
-const Auth = ({ signIn, err, setErr, isLoading }) => {
+import { authSelector, loginStart } from '../redux/reducers/auth'
+
+function Auth({ navigation }) {
+  const auth = useSelector(authSelector);
+  const dispatch = useDispatch();
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
   const autorize = () => {
-    signIn({ login: login.trim(), password });
+    dispatch(loginStart({ login: login.trim(), password }))
   };
 
   const changeLogin = text => {
-    if (err) {
-      setErr(false);
-    }
     setLogin(text);
   };
 
   const changePassword = text => {
-    if (err) {
-      setErr(false);
-    }
+
     setPassword(text);
   };
 
+  useEffect(() => {
+    if (auth.user.id) {
+      navigation.navigate("Home");
+    }
+
+  }, [auth])
+
+
+  if (auth.user.laoding) {
+    return <View style={styles.contentCenter}>
+      <ActivityIndicator size="large" color="#fa000c" />
+    </View>
+  }
+
   return (
+    <ImageBackground
+    source={require("../assets/bg4.png")}
+    style={{ width: "100%", height: "100%" }}
+  >
     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
-      {isLoading ? (
-        <View style={styles.contentCenter}>
-          <ActivityIndicator size="large" color="#fa000c" />
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <View style={styles.block}>
-            <Text style={styles.lable}>Логин:</Text>
-            <TextInput
-              style={styles.input}
-              textContentType="username"
-              placeholder="введите логин..."
-              onChangeText={changeLogin}
-              value={login}
-            />
-          </View>
-          <View style={styles.block}>
-            <Text style={styles.lable}>Пароль:</Text>
-            <TextInput
-              style={styles.input}
-              textContentType="password"
-              secureTextEntry={true}
-              placeholder="введите пароль..."
-              onChangeText={changePassword}
-              value={password}
-            />
-          </View>
+      <View style={styles.container}>
 
-          {err && (
-            <View>
-              <Text style={styles.errText}>
-                Введены неверные логин и пароль
+        <View style={styles.block}>
+          <Text style={styles.lable}>Логин</Text>
+          <TextInput
+            style={styles.input}
+            textContentType="username"
+            placeholder="введите логин..."
+            onChangeText={changeLogin}
+            value={login}
+          />
+        </View>
+
+        <View style={styles.block}>
+          <Text style={styles.lable}>Пароль</Text>
+          <TextInput
+            style={styles.input}
+            textContentType="password"
+            secureTextEntry={true}
+            placeholder="введите пароль..."
+            onChangeText={changePassword}
+            value={password}
+          />
+        </View>
+
+        {auth.error && (
+          <View>
+            <Text style={styles.errText}>
+              {`Введены неверные логин или пароль
+              поля регистрозависимые`}
               </Text>
-            </View>
-          )}
-
-          <View style={styles.btnBlock}>
-            <TouchableOpacity onPress={autorize}>
-              <View style={styles.btn}>
-                <Text style={styles.btnText}>Войти</Text>
-                <Ionicons name="md-log-in" size={32} color="#fff" />
-              </View>
-            </TouchableOpacity>
           </View>
+        )}
+
+        <View style={styles.btnBlock}>
+          <DebounceTouchbleOpacity onPress={autorize} delay={1000}>
+            <View style={styles.btn}>
+              <Text style={styles.btnText}>Войти</Text>
+            </View>
+          </DebounceTouchbleOpacity>
         </View>
-      )}
-    </KeyboardAvoidingView>
+
+      </View>
+    </KeyboardAvoidingView >
+    </ImageBackground>
   );
 };
+
+export default Auth;
 
 const styles = StyleSheet.create({
   container: {
@@ -95,19 +114,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     margin: 10,
-    borderWidth: 1,
-    borderColor: "#fff",
-    backgroundColor: "#fa000c",
+    borderWidth: 2,
+    borderColor: "#fa000c",
+    //backgroundColor: "#fa000c",
     paddingHorizontal: 10,
     width: 200,
-    color: "#fff"
+    color: "#fff",
+    position: 'relative'
   },
   lable: {
-    color: "#fff"
+    color: "#fa000c",
+    position: 'absolute',
+    backgroundColor: '#fff',
+    top: -12,
+    left: 10,
   },
   input: {
     padding: 10,
-    color: "#fff"
+    color: "#fa000c",
+    fontSize: 14
   },
   btnBlock: {
     width: 200,
@@ -116,7 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 25
   },
   errText: {
-    color: "#ab150a"
+    color: "#fa000c"
   },
   btn: {
     display: "flex",
@@ -132,8 +157,9 @@ const styles = StyleSheet.create({
   },
   btnText: {
     padding: 10,
-    color: "#fff"
+    color: "#fff",
+    fontWeight: 'bold'
   }
 });
 
-export default Auth;
+

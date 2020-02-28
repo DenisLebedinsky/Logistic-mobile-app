@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -7,95 +8,86 @@ import {
   AsyncStorage,
   TouchableOpacity,
   ActivityIndicator,
-  ImageBackground
+  ImageBackground,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import Auth from "./Auth";
-import { signIn } from "../api";
+import { locationsSelector, getLocations } from '../redux/reducers/locations';
+import { authSelector, loginSuccess, logout } from "../redux/reducers/auth";
+import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
+
+import { getPackage } from '../redux/reducers/packages';
 
 export default function Home({ navigation }) {
-  const [auth, setAuth] = useState({
-    isLogin: false,
-    isLoading: true,
-    token: "",
-    user: { username: "", id: "" }
-  });
-  const [err, setErr] = useState(false);
+
+  const auth = useSelector(authSelector);
+  const locations = useSelector(locationsSelector)
+  const dispatch = useDispatch();
+
+  // const scanData = ()=>{
+  //   dispatch(getPackage("5e481865b0379f2ad4c00fc1"));
+  //   navigation.navigate('PackageInfo');
+  // }
 
   useEffect(() => {
-    if (auth.isLoading && !auth.isLogin) {
-      _retrieveData();
+    if (!(auth.loading || !!auth.user.id)) {
+      getAuthFromASS();
+
     }
   });
 
-  const signInMethod = async data => {
-    const res = await signIn(data);
-
-    if (res !== "error") {
-      setAuth({
-        isLogin: true,
-        isLoading: false,
-        token: res.token,
-        user: {
-          username: res.username,
-          id: res.id
-        }
-      });
-      _storeData(res.token, {
-        username: res.username,
-        id: res.id,
-        locationId: res.locationId
-      });
-    } else {
-      setErr(true);
+  useEffect(() => {
+    if (!locations.loading && !!auth.user.id && !locations?.list.length) {  
+      dispatch(getLocations())
     }
-  };
+  });
+
+  const getAuthFromASS = async () => {
+    const user = await AsyncStorage.getItem('user')
+
+    if (user) {
+      const parseUser = JSON.parse(user);
+
+      dispatch(loginSuccess(parseUser))
+    } else {
+      navigation.navigate("Login");
+    }
+  }
 
   openScaner = () => {
-    navigation.navigate("BarcodeScanner");
+    navigation.push("BarcodeScanner");
   };
 
-  logout = () => {
-    setAuth({
-      isLogin: false,
-      isLoading: false,
-      token: "",
-      user: { username: "", id: "" }
-    });
-    _removeData();
-  };
+  const _logout = () => {
+    dispatch(logout())
+  }
 
-  _retrieveData = async () => {
-    try {
-      const token = await AsyncStorage.getItem("TOKEN");
-      const user = JSON.parse(await AsyncStorage.getItem("USER"));
-      if (token && user) {
-        setAuth({ ...auth, token, isLoading: false, user, isLogin: true });
-      } else {
-        setAuth({ ...auth, isLoading: false });
-      }
-    } catch (error) {
-      console.log(error);
+  function renderContent() {
+    if (auth.loading) {
+      return <View style={styles.contentCenter}>
+        <ActivityIndicator size="large" color="#fa000c" />
+      </View>
     }
-  };
 
-  _storeData = async (token, user) => {
-    try {
-      await AsyncStorage.setItem("TOKEN", token);
-      await AsyncStorage.setItem("USER", JSON.stringify(user));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  _removeData = async () => {
-    try {
-      await AsyncStorage.removeItem("TOKEN");
-      await AsyncStorage.removeItem("USER");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    return <View style={styles.profileContainer}>
+      <View style={styles.profile}>
+   
+      <DebounceTouchbleOpacity onPress={_logout} delay={1000}>
+        <Text style={styles.profileText}>
+          {auth.user.username}
+        </Text>
+        </DebounceTouchbleOpacity>
+      </View>
+      <DebounceTouchbleOpacity 
+      onPress={openScaner}
+      delay={1000}>
+        <View style={styles.contentCenter}>
+          <Image
+            style={styles.stretch}
+            source={require("../assets/scan.jpg")}
+          />
+        </View>
+      </DebounceTouchbleOpacity>
+    </View>
+  }
 
   return (
     <ImageBackground
@@ -103,38 +95,9 @@ export default function Home({ navigation }) {
       style={{ width: "100%", height: "100%" }}
     >
       <View style={styles.container}>
-        {auth.isLoading ? (
-          <View style={styles.contentCenter}>
-            <ActivityIndicator size="large" color="#fa000c" />
-          </View>
-        ) : auth.isLogin ? (
-          <View style={styles.profileContainer}>
-            <View style={styles.profile}>
-              <Text style={styles.profileText}>{auth.user.username}</Text>
-              <TouchableOpacity onPress={logout}>
-                <Ionicons
-                  name="md-log-out"
-                  size={32}
-                  color="#fff"
-                />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity onPress={openScaner}>
-              <View style={styles.contentCenter}>
-                <Image
-                  style={styles.stretch}
-                  source={require("../assets/scan.jpg")}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.contentCenter}>
-            <Auth signIn={signInMethod} err={err} setErr={setErr} isLoading={auth.isLoading}/>
-          </View>
-        )}
-      </View>
-    </ImageBackground>
+        {renderContent()}
+      </View >
+     </ImageBackground>
   );
 }
 
@@ -173,12 +136,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#000",
     borderColor: "#fff",
     backgroundColor: "#fa000c",
-    padding: 30
+    padding: 20
   },
   profileContainer: {
     flex: 1,
@@ -186,7 +148,7 @@ const styles = StyleSheet.create({
   },
   profileText: {
     fontSize: 20,
-    marginRight: 30,
+   // marginRight: 30,
     color: "#fff"
   }
 });
