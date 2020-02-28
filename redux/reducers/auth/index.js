@@ -1,7 +1,9 @@
-import { put, takeLatest, all, fork, spawn } from 'redux-saga/effects';
+import { call, put, takeLatest, all, fork, spawn, select } from 'redux-saga/effects';
 import {
   AsyncStorage
 } from "react-native";
+import { Notifications } from 'expo';
+import * as Permissions from 'expo-permissions';
 import api from '../../../api';
 
 const LOG_IN = '@@auth/LOG_IN';
@@ -12,7 +14,6 @@ const LOG_OUT = '@@auth/LOG_OUT';
 const GET_USER_INFO = "@@auth/GET_USER_INFO";
 const GET_USER_INFO_SUCCESS = "@@auth/GET_USER_INFO_SUCCESS";
 const GET_USER_INFO_FAIL = "@@auth/GET_USER_INFO_FAIL";
-
 
 
 const initialState = {
@@ -35,7 +36,7 @@ export const reducer = (state = initialState, action) => {
     case LOG_IN:
       return state;
     case LOG_IN_SUCCESS:
-      return { ...state, user:payload };
+      return { ...state, user: payload };
     case LOG_IN_FAIL:
       return { ...state, error: true };
     case LOG_OUT:
@@ -93,6 +94,7 @@ function* watchLoginSaga() {
   yield takeLatest(LOG_IN, loginSaga);
   yield takeLatest(LOG_OUT, logoutSaga);
   yield takeLatest(GET_USER_INFO, userInfoSaga);
+  yield takeLatest(LOG_IN_SUCCESS, sendExpoTockenSaga);
 }
 
 
@@ -147,5 +149,34 @@ function* userInfoSaga(action) {
     yield put(getUserInfoSuccess(successData));
   } catch (e) {
     yield put(getUserInfoFail(e.message));
+  }
+}
+
+function* sendExpoTockenSaga() {
+
+  const { status } = yield call([Permissions, 'askAsync'], Permissions.NOTIFICATIONS);
+
+  if (status !== 'granted') {
+    alert('нет разрешений на Push-уведомления');
+
+  } else {
+
+    let token = yield call([Notifications, 'getExpoPushTokenAsync']);
+    const auth = yield select(authSelector)
+
+    try {
+
+      api.defaults.headers.common.Authorization = `Baerer ${auth.user.token}`;
+
+      const data = JSON.stringify({
+        token: token,
+        userId: auth.user.id
+      })
+
+      yield api.post('/users/addExpoToken', data);
+
+    } catch (error) {
+      console.log(error.response)
+    }
   }
 }
