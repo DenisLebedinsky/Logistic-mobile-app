@@ -48,7 +48,7 @@ export default function Home({ navigation }) {
 
       dispatch(loginSuccess(parseUser))
     } else {
-      navigation.navigate("Login");
+      navigation.replace("Login");
     }
   }
 
