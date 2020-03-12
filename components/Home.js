@@ -6,7 +6,6 @@ import {
   View,
   Image,
   AsyncStorage,
-  TouchableOpacity,
   ActivityIndicator,
   ImageBackground,
 } from "react-native";
@@ -14,18 +13,11 @@ import { locationsSelector, getLocations } from '../redux/reducers/locations';
 import { authSelector, loginSuccess, logout } from "../redux/reducers/auth";
 import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
-import { getPackage } from '../redux/reducers/packages';
-
 export default function Home({ navigation }) {
 
   const auth = useSelector(authSelector);
   const locations = useSelector(locationsSelector)
   const dispatch = useDispatch();
-
-  // const scanData = ()=>{
-  //   dispatch(getPackage("5e481865b0379f2ad4c00fc1"));
-  //   navigation.navigate('PackageInfo');
-  // }
 
   useEffect(() => {
     if (!(auth.loading || !!auth.user.id)) {
@@ -57,6 +49,7 @@ export default function Home({ navigation }) {
   };
 
   const _logout = () => {
+    navigation.replace("Login");
     dispatch(logout())
   }
 

@@ -1,29 +1,34 @@
-import { call, put, takeLatest, all, fork, spawn, select } from 'redux-saga/effects';
 import {
-  AsyncStorage
-} from "react-native";
-import { Notifications } from 'expo';
-import * as Permissions from 'expo-permissions';
-import api from '../../../api';
+  call,
+  put,
+  takeLatest,
+  all,
+  fork,
+  spawn,
+  select
+} from "redux-saga/effects";
+import { AsyncStorage } from "react-native";
+import { Notifications } from "expo";
+import * as Permissions from "expo-permissions";
+import api from "../../../api";
 
-const LOG_IN = '@@auth/LOG_IN';
-const LOG_IN_SUCCESS = '@@auth/LOG_IN_SUCCESS';
-const LOG_IN_FAIL = '@@auth/LOG_IN_FAIL';
-const LOG_OUT = '@@auth/LOG_OUT';
+const LOG_IN = "@@auth/LOG_IN";
+const LOG_IN_SUCCESS = "@@auth/LOG_IN_SUCCESS";
+const LOG_IN_FAIL = "@@auth/LOG_IN_FAIL";
+const LOG_OUT = "@@auth/LOG_OUT";
 
 const GET_USER_INFO = "@@auth/GET_USER_INFO";
 const GET_USER_INFO_SUCCESS = "@@auth/GET_USER_INFO_SUCCESS";
 const GET_USER_INFO_FAIL = "@@auth/GET_USER_INFO_FAIL";
 
-
 const initialState = {
   loading: false,
   user: {
-    username: '',
-    token: '',
-    role: '',
-    locationId: '',
-    id: ''
+    username: "",
+    token: "",
+    role: "",
+    locationId: "",
+    id: ""
   },
   error: false
 };
@@ -43,11 +48,11 @@ export const reducer = (state = initialState, action) => {
       return {
         loading: false,
         user: {
-          username: '',
-          token: '',
-          role: '',
-          locationId: '',
-          id: ''
+          username: "",
+          token: "",
+          role: "",
+          locationId: "",
+          id: ""
         },
         error: false
       };
@@ -63,30 +68,35 @@ export const reducer = (state = initialState, action) => {
 };
 
 // selectors
-export const authSelector = (state) => state.auth;
+export const authSelector = state => state.auth;
 
 // Action creators
 export const loginStart = authData => ({ type: LOG_IN, payload: authData });
 
-export const loginSuccess = successData =>
-  ({ type: LOG_IN_SUCCESS, payload: successData });
+export const loginSuccess = successData => ({
+  type: LOG_IN_SUCCESS,
+  payload: successData
+});
 
-export const loginFail = error =>
-  ({ type: LOG_IN_FAIL, payload: { error } });
+export const loginFail = error => ({ type: LOG_IN_FAIL, payload: { error } });
 
 export const logout = () => ({ type: LOG_OUT });
 
 export const getUserInfo = token => ({ type: GET_USER_INFO, payload: token });
 
-export const getUserInfoSuccess = successData => ({ type: GET_USER_INFO_SUCCESS, payload: successData });
+export const getUserInfoSuccess = successData => ({
+  type: GET_USER_INFO_SUCCESS,
+  payload: successData
+});
 
-export const getUserInfoFail = (error) =>
-  ({ type: GET_USER_INFO_FAIL, payload: { error } });
+export const getUserInfoFail = error => ({
+  type: GET_USER_INFO_FAIL,
+  payload: { error }
+});
 
 //  Sagsas
 export function* saga() {
   yield all([fork(watchLoginSaga)]);
-
 }
 
 // wathers
@@ -94,16 +104,15 @@ function* watchLoginSaga() {
   yield takeLatest(LOG_IN, loginSaga);
   yield takeLatest(LOG_OUT, logoutSaga);
   yield takeLatest(GET_USER_INFO, userInfoSaga);
-  yield takeLatest(LOG_IN_SUCCESS, sendExpoTockenSaga);
+  // yield takeLatest(LOG_IN_SUCCESS, sendExpoTockenSaga);
 }
 
-
-function* loginSaga({ payload }) {
+function* loginSaga({ payload: { login, password, navigation } }) {
   try {
-    const result = yield api.post('/users/login', payload);
+    const result = yield api.post("/users/login", { login, password });
 
     if (!result) {
-      throw new Error('Forbidden');
+      throw new Error("Forbidden");
     }
 
     const successData = {
@@ -117,9 +126,9 @@ function* loginSaga({ payload }) {
       },
       error: false
     };
-
-    yield spawn(setUserToAsyncStorageSaga, result.data)
+    yield spawn(setUserToAsyncStorageSaga, result.data);
     yield put(loginSuccess(successData));
+    navigation.replace("Home");
   } catch (e) {
     yield put(loginFail(e.message));
   }
@@ -130,18 +139,17 @@ function* logoutSaga(action) {
 }
 
 function* setUserToAsyncStorageSaga(user) {
-  yield AsyncStorage.setItem('user', JSON.stringify(user))
-
+  yield AsyncStorage.setItem("user", JSON.stringify(user));
 }
 
 function* userInfoSaga(action) {
   try {
     api.defaults.headers.common.Authorization = `Baerer ${action.payload}`;
 
-    const result = yield api.post('/users/getByToken');
+    const result = yield api.post("/users/getByToken");
 
     if (!result) {
-      throw new Error('Forbidden');
+      throw new Error("Forbidden");
     }
 
     const successData = { ...result.data, token: action.payload };
@@ -152,31 +160,28 @@ function* userInfoSaga(action) {
   }
 }
 
-function* sendExpoTockenSaga() {
+function* sendExpoTockenSaga({ payload }) {
+  const { status } = yield call(
+    [Permissions, "askAsync"],
+    Permissions.NOTIFICATIONS
+  );
 
-  const { status } = yield call([Permissions, 'askAsync'], Permissions.NOTIFICATIONS);
-
-  if (status !== 'granted') {
-    alert('нет разрешений на Push-уведомления');
-
+  if (status !== "granted") {
+    alert("нет разрешений на Push-уведомления");
   } else {
-
-    let token = yield call([Notifications, 'getExpoPushTokenAsync']);
-    const auth = yield select(authSelector)
+    let token = yield call([Notifications, "getExpoPushTokenAsync"]);
 
     try {
-
-      api.defaults.headers.common.Authorization = `Baerer ${auth.user.token}`;
+      api.defaults.headers.common.Authorization = `Baerer ${payload.user.token}`;
 
       const data = JSON.stringify({
         token: token,
-        userId: auth.user.id
-      })
+        userId: payload.user.id
+      });
 
-      yield api.post('/users/addExpoToken', data);
-
+      yield api.post("/users/addExpoToken", data);
     } catch (error) {
-      console.log(error.response)
+      console.log(error);
     }
   }
 }

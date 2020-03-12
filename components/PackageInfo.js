@@ -13,9 +13,15 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import moment from "moment";
-import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
-import { authSelector } from '../redux/reducers/auth'
-import { packageSelector, errorSelector, loadingSelector, changeUpdateItem, setUpdateItem } from '../redux/reducers/packages';
+import DebounceTouchbleOpacity from "./helpers/DebounceTouchbleOpacity";
+import { authSelector } from "../redux/reducers/auth";
+import {
+  packageSelector,
+  errorSelector,
+  loadingSelector,
+  changeUpdateItem,
+  setUpdateItem
+} from "../redux/reducers/packages";
 import { Container, Content } from "native-base";
 
 const PackageInfo = ({ navigation }) => {
@@ -24,11 +30,10 @@ const PackageInfo = ({ navigation }) => {
 
   const dispatch = useDispatch();
   const item = useSelector(packageSelector);
-  const auth = useSelector(authSelector)
+  const auth = useSelector(authSelector);
   const error = useSelector(errorSelector);
-  const loading = useSelector(loadingSelector)
+  const loading = useSelector(loadingSelector);
   const finalWerehouse = auth.user.locationId === item?.resiverId?._id;
-
 
   const onAccept = () => {
     navigation.push("AcceptPackage");
@@ -42,11 +47,11 @@ const PackageInfo = ({ navigation }) => {
     const data = {
       _id: item._id,
       sendData: Date.now(),
-      sendUserId: auth?.user?.id || '',
+      sendUserId: auth?.user?.id || "",
       status: "передано в доставку"
     };
 
-    dispatch(changeUpdateItem(data))
+    dispatch(changeUpdateItem(data));
     navigation.push("DriverDetails");
   };
 
@@ -58,33 +63,33 @@ const PackageInfo = ({ navigation }) => {
     setIsOpenTransit(!isOpenTransit);
   };
 
-  const renderLoadError = () => <View>
-    <Text style={styles.err}>
-      {`Ошибка загрузки данных об отправлении,
+  const renderLoadError = () => (
+    <View>
+      <Text style={styles.err}>
+        {`Ошибка загрузки данных об отправлении,
        повторите попытку`}
-    </Text>
-    <DebounceTouchbleOpacity onPress={() => navigation.pop(1)} delay={1000}>
-      <View style={styles.btn}>
-        <Text style={styles.btnText}>Вернуться к сканированию</Text>
-      </View>
-    </DebounceTouchbleOpacity>
-  </View>
+      </Text>
+      <DebounceTouchbleOpacity onPress={() => navigation.pop(1)} delay={1000}>
+        <View style={styles.btn}>
+          <Text style={styles.btnText}>Вернуться к сканированию</Text>
+        </View>
+      </DebounceTouchbleOpacity>
+    </View>
+  );
 
-  const renderInventoryEmpty = () => <View>
-    <Text style={styles.err}>
-      {`Список предметов пуст`}
-    </Text>
-  </View>
+  const renderInventoryEmpty = () => (
+    <View>
+      <Text style={styles.err}>{`Список предметов пуст`}</Text>
+    </View>
+  );
 
-  const renderTransitEmpty = () => (<View>
-    <Text style={styles.err}>
-      {`Транзитные пункты не добавлены`}
-    </Text>
-  </View>)
+  const renderTransitEmpty = () => (
+    <View>
+      <Text style={styles.err}>{`Транзитные пункты не добавлены`}</Text>
+    </View>
+  );
 
   const renderButton = () => {
-    console.log(item)
-
     if (item.status === "accepted" || item.status === "доставлено") {
       return (
         <View>
@@ -103,156 +108,150 @@ const PackageInfo = ({ navigation }) => {
       );
     }
 
-
     return (
       <View style={styles.btnBlock}>
         <View>
-          {!finalWerehouse &&
+          {!finalWerehouse && (
             <DebounceTouchbleOpacity onPress={transmit}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Переслать</Text>
               </View>
             </DebounceTouchbleOpacity>
-          }
+          )}
         </View>
         <View>
-
           <DebounceTouchbleOpacity onPress={onAccept}>
             {!finalWerehouse ? (
               <View style={styles.btn}>
-                <Text style={styles.btnText}>
-                  Принять на транзитный склад
-                  </Text>
+                <Text style={styles.btnText}>Принять на транзитный склад</Text>
               </View>
             ) : (
                 <View style={styles.btn}>
-                  <Text style={styles.btnText}>
-                    Принять и закончить маршрут
-                  </Text>
+                  <Text style={styles.btnText}>Принять и закончить маршрут</Text>
                 </View>
               )}
           </DebounceTouchbleOpacity>
-
         </View>
       </View>
     );
   };
 
-  const renderInventory = () => <View>
-    <DebounceTouchbleOpacity onPress={toggleItemList}>
-      <View style={styles.listbtn}>
-        <Text style={styles.btnText}>
-          {isOpenItems
-            ? "Cкрыть список предметов"
-            : "Показать список предметов"}
-        </Text>
-        <Ionicons name="md-list" size={32} color="#fff" />
-      </View>
-    </DebounceTouchbleOpacity>
+  const renderInventory = () => (
+    <View>
+      <DebounceTouchbleOpacity onPress={toggleItemList}>
+        <View style={styles.listbtn}>
+          <Text style={styles.btnText}>
+            {isOpenItems
+              ? "Cкрыть список предметов"
+              : "Показать список предметов"}
+          </Text>
+          <Ionicons name="md-list" size={32} color="#fff" />
+        </View>
+      </DebounceTouchbleOpacity>
 
-    {isOpenItems && (
-      <View>
-        <ScrollView>
-          <FlatList
-            data={item.inventory}
-            renderItem={({ item }) => (
-              <View style={styles.list}>
-                <View style={styles.titleItem}>
-                  <Text style={styles.listText}>{item.title}</Text>
+      {isOpenItems && (
+        <View>
+          <ScrollView>
+            <FlatList
+              data={item.inventory}
+              renderItem={({ item }) => (
+                <View style={styles.list}>
+                  <View style={styles.titleItem}>
+                    <Text style={styles.listText}>{item.title}</Text>
+                  </View>
+                  <View style={styles.countItem}>
+                    <Text style={styles.listText}>{item.count}</Text>
+                  </View>
                 </View>
-                <View style={styles.countItem}>
-                  <Text style={styles.listText}>{item.count}</Text>
+              )}
+              keyExtractor={item => item._id.toString()}
+            ></FlatList>
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+
+  const renderTransit = () => (
+    <View>
+      <DebounceTouchbleOpacity onPress={toggleTransitList}>
+        <View style={styles.listbtn}>
+          <Text style={styles.btnText}>
+            {isOpenTransit
+              ? "Cкрыть транзитные пункты"
+              : "Показать транзитные пункты"}
+          </Text>
+          <Ionicons name="md-list" size={32} color="#fff" />
+        </View>
+      </DebounceTouchbleOpacity>
+
+      {isOpenTransit && item.transit?.length > 0 && (
+        <View>
+          <ScrollView>
+            <FlatList
+              data={item.transit}
+              renderItem={({ item }) => (
+                <View style={styles.list}>
+                  <View style={styles.titleItemT}>
+                    <Text style={styles.listText}>
+                      {item.sendLocId && item.sendLocId.title}
+                    </Text>
+                  </View>
+                  <View style={styles.countItemT}>
+                    <Text style={styles.listText}>
+                      {item.date &&
+                        moment(item.date).format("DD.MM.YYYY hh:mm")}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
-            keyExtractor={item => item._id.toString()}
-          ></FlatList>
-        </ScrollView>
-      </View>
-    )}
-  </View>
-
-
-
-  const renderTransit = () => <View>
-    <DebounceTouchbleOpacity onPress={toggleTransitList}>
-      <View style={styles.listbtn}>
-        <Text style={styles.btnText}>
-          {isOpenTransit
-            ? "Cкрыть транзитные пункты"
-            : "Показать транзитные пункты"}
-        </Text>
-        <Ionicons name="md-list" size={32} color="#fff" />
-      </View>
-    </DebounceTouchbleOpacity>
-
-    {isOpenTransit && item.transit?.length > 0 && (
-      <View>
-        <ScrollView>
-          <FlatList
-            data={item.transit}
-            renderItem={({ item }) => (
-              <View style={styles.list}>
-                <View style={styles.titleItemT}>
-                  <Text style={styles.listText}>
-                    {item.sendLocId && item.sendLocId.title}
-                  </Text>
-                </View>
-                <View style={styles.countItemT}>
-                  <Text style={styles.listText}>
-                    {item.date &&
-                      moment(item.date).format("DD.MM.YYYY hh:mm")}
-                  </Text>
-                </View>
-              </View>
-            )}
-            keyExtractor={item => "transit_" + item._id}
-          ></FlatList>
-        </ScrollView>
-      </View>
-    )}
-
-  </View>
-
+              )}
+              keyExtractor={item => "transit_" + item._id}
+            ></FlatList>
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
 
   if (error) {
-    return <Container style={{ justifyContent: 'center' }}>
-      {error && <View>
-        <Text style={styles.err}>
-          {`При загрузки данных возникла ошибка,
+    return (
+      <Container style={{ justifyContent: "center" }}>
+        {error && (
+          <View>
+            <Text style={styles.err}>
+              {`При загрузки данных возникла ошибка,
         проверте интернет соединение 
         и повторите попытку`}
-        </Text>
-      </View>}
-    </Container>
+            </Text>
+          </View>
+        )}
+      </Container>
+    );
   }
 
   return (
-    <Container style={{ justifyContent: 'center' }}>
-
+    <Container style={{ justifyContent: "center" }}>
       {loading && <ActivityIndicator size="large" color="#fa000c" />}
 
       {!loading && !item && renderLoadError()}
 
-      {!loading && item &&
+      {!loading && item && (
         // <View style={styles.contentInfo}>
         <Content style={styles.contentInfo}>
           <View style={styles.info}>
-
             <Text style={styles.textheader}>Получатель:</Text>
             <Text style={styles.text}>
               {item.resiverId && item.resiverId.title}
             </Text>
 
             <Text style={styles.textheader}>Примечание:</Text>
-            <Text style={styles.text}>
-              {item.note}
-            </Text>
-
+            <Text style={styles.text}>{item.note}</Text>
           </View>
 
           <View style={styles.listBlock}>
-            {item.inventory?.length ? renderInventory() : renderInventoryEmpty()}
+            {item.inventory?.length
+              ? renderInventory()
+              : renderInventoryEmpty()}
           </View>
 
           <View style={styles.listBlock}>
@@ -270,15 +269,13 @@ const PackageInfo = ({ navigation }) => {
               </Text>
             </View>
           </View>
-
         </Content>
-      }
+      )}
       <View style={styles.contentCenter}>
         {!loading && item && renderButton()}
       </View>
-
     </Container>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
@@ -310,15 +307,15 @@ const styles = StyleSheet.create({
   text: {
     // textAlign: "center",
     color: "#000",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     fontSize: 17,
-    fontWeight: '700'
+    fontWeight: "700"
   },
   textheader: {
     // textAlign: "center",
     color: "#fff",
     fontWeight: "800",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     fontSize: 17
   },
   listBlock: {
@@ -351,7 +348,7 @@ const styles = StyleSheet.create({
   },
   listText: {
     color: "#000",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     fontSize: 17
   },
   listbtn: {
@@ -365,17 +362,17 @@ const styles = StyleSheet.create({
     paddingLeft: 10
   },
   btn: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#fa000c",
     padding: 10,
     borderWidth: 1,
     borderColor: "#fff",
-    margin: 10
+    // margin: 3
   },
   btnText: {
     color: "#fff",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     fontSize: 16
   },
   btnBlock: {
@@ -383,22 +380,22 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    paddingHorizontal: 20
   },
   err: {
     color: "red",
     textAlign: "center",
-    fontFamily: 'Roboto',
+    fontFamily: "Roboto",
     fontSize: 16,
     marginVertical: 20
   },
   driverDetails: {
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     paddingLeft: 10,
     paddingVertical: 10,
     backgroundColor: "#fa000c"
-  },
-
+  }
 });
 
 export default PackageInfo;

@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
 import DebounceTouchbleOpacity from './helpers/DebounceTouchbleOpacity'
 
 import { authSelector, loginStart } from '../redux/reducers/auth'
@@ -20,7 +19,7 @@ function Auth({ navigation }) {
   const [password, setPassword] = useState("");
 
   const autorize = () => {
-    dispatch(loginStart({ login: login.trim(), password }))
+    dispatch(loginStart({ login: login.trim(), password, navigation }))
   };
 
   const changeLogin = text => {
@@ -28,16 +27,8 @@ function Auth({ navigation }) {
   };
 
   const changePassword = text => {
-
     setPassword(text);
   };
-
-  useEffect(() => {
-    if (auth.user.id) {
-      navigation.navigate("Home");
-    }
-
-  }, [auth])
 
 
   if (auth.user.laoding) {
