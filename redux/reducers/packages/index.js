@@ -184,7 +184,7 @@ function* getPackagesSaga({ payload }) {
 function* updatePackageSaga({ payload }) {
   // payload = navigation from router
   const updatedPackage = yield select(updateItemSelector);
-  console.log('update package', updatedPackage)
+
   const {
     user: { token }
   } = yield select(authSelector);
@@ -225,8 +225,18 @@ function* sendFromTransitSaga({ payload }) {
     item.transit[transitlength - 1].sendfactLocId = user.locationId;
     item.transit[transitlength - 1].userId = user.id;
   } else {
+    item.transit.push({
+      sendLocId: { title: payload },
+      date: dateNow,
+      sendfactLocId: user.locationId,
+      userId: user.id
+    })
+  }
+
+  if (transitlength === 0) {
     item.transit = [{ sendfactLocId: user.locationId }]
   }
+
 
   if (
     !(
@@ -236,7 +246,7 @@ function* sendFromTransitSaga({ payload }) {
   ) {
 
     item.transit.push({
-     sendLocId: { title: payload }
+      sendLocId: { title: payload }
     });
   }
 
@@ -252,7 +262,7 @@ function* sendFromTransitSaga({ payload }) {
 
 function* acceptPackageSaga({ payload }) {
   const { user } = yield select(authSelector);
-  console.log('user', user)
+
   const item = yield select(packageSelector);
 
   const isTransit = user.locationId !== item.resiverId._id;

@@ -104,7 +104,7 @@ function* watchLoginSaga() {
   yield takeLatest(LOG_IN, loginSaga);
   yield takeLatest(LOG_OUT, logoutSaga);
   yield takeLatest(GET_USER_INFO, userInfoSaga);
-  // yield takeLatest(LOG_IN_SUCCESS, sendExpoTockenSaga);
+  yield takeLatest(LOG_IN_SUCCESS, sendExpoTockenSaga);
 }
 
 function* loginSaga({ payload: { login, password, navigation } }) {
