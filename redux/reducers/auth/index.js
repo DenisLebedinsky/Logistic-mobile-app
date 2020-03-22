@@ -160,7 +160,8 @@ function* userInfoSaga(action) {
   }
 }
 
-function* sendExpoTockenSaga({ payload }) {
+function* sendExpoTockenSaga() {
+  const { user } = yield select(authSelector)
   const { status } = yield call(
     [Permissions, "askAsync"],
     Permissions.NOTIFICATIONS
@@ -172,11 +173,11 @@ function* sendExpoTockenSaga({ payload }) {
     let token = yield call([Notifications, "getExpoPushTokenAsync"]);
 
     try {
-      api.defaults.headers.common.Authorization = `Baerer ${payload.user.token}`;
+      api.defaults.headers.common.Authorization = `Baerer ${user.token}`;
 
       const data = JSON.stringify({
         token: token,
-        userId: payload.user.id
+        userId: user.id
       });
 
       yield api.post("/users/addExpoToken", data);
